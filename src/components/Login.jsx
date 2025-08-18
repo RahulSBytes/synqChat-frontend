@@ -1,9 +1,12 @@
 import { Camera, Eye, EyeOff, File, KeyRound, Mail, User } from 'lucide-react';
 import React, { useState } from 'react'
 import { useForm } from "react-hook-form"
+import useMeta from '../hooks/useMeta';
 
 
 function Login() {
+
+useMeta({title:"login", description:"this is the login page"})
 
   const [isLogin, setIsLogin] = useState(true);
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
@@ -69,7 +72,7 @@ function Login() {
                 }
               })}
             />
-            <span onClick={() => setPassSeen(prev => !prev)}>
+            <span className='cursor-pointer' onClick={() => setPassSeen(prev => !prev)}>
               {passSeen ? <Eye size={16} strokeWidth={1} /> : <EyeOff size={16} strokeWidth={1} />}
             </span>
           </label>
@@ -197,7 +200,7 @@ function Login() {
                   }
                 })}
               />
-              <span onClick={() => setPassSeen(prev => !prev)}>
+              <span className='cursor-pointer' onClick={() => setPassSeen(prev => !prev)}>
                 {passSeen ? <Eye size={16} strokeWidth={1} /> : <EyeOff size={16} strokeWidth={1} />}
               </span>
             </label>

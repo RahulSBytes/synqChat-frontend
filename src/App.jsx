@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements } 
 import { lazy, Suspense } from "react";
 import Home from "./components/Home";
 import ProtectRoute from "./components/auth/protectRoute";
+import Chats from "./components/Chats";
 
 // Lazy-loaded pages
 const Group = lazy(() => import("./components/Group"));
@@ -43,6 +44,16 @@ const router = createBrowserRouter(
         </LazyWrapper>
       }
       />
+
+      <Route path="chat/:chatid" element={
+        <LazyWrapper>
+          <Chats />
+        </LazyWrapper>
+      }
+      />
+
+
+      
       <Route path="admin">
         <Route index element={
           <ProtectRoute user={user}>
