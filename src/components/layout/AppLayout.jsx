@@ -8,9 +8,10 @@ export default function AppLayout(WrappedComponent) {
       <div className="h-screen flex flex-col ">
         <Header />
         <div className="flex h-64 flex-1">
+
           <UsersList/>
 
-          <div className=" bg-[#1B1B1B] flex-1 ">
+          <div className=" bg-[#1B1B1B] flex-1 overflow-y-scroll scrollbar-thin">
             <WrappedComponent {...props} />
           </div>
 

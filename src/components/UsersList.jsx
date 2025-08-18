@@ -4,7 +4,7 @@ import { userdata } from './constants/userdata'
 function UsersList() {
   return (
     <aside className="w-80 hidden md:flex flex-col bg-[#242424] ">
-      <div className="flex w-3/4 bg-[#3B3B3B] m-auto rounded-full px-3 py-[5px]">
+      <div className="flex w-3/4 bg-[#3B3B3B] m-auto rounded-full px-3 py-[3px]">
         <input
           type="text"
           placeholder="search user"
@@ -14,9 +14,9 @@ function UsersList() {
       </div>
 
 
-      <div className="flex-1 flex flex-col gap-2 my-4 px-2 overflow-y-scroll">
+      <div className="flex-1 flex flex-col gap-2 my-4 px-2 overflow-y-scroll scrollbar-thin">
         {userdata.map(({ dp, name, lastMessage, time, id }) => (
-          <div className="flex items-center" key={id}>
+          <div className="flex items-center hover:bg-[#313131]" key={id}>
             <img
               src={dp || '/image.png'}
               className="h-8 w-8 rounded-full mx-2"

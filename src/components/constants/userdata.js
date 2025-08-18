@@ -140,3 +140,37 @@ export const userdata = [
     "dp": "https://randomuser.me/api/portraits/women/20.jpg"
   }
 ]
+
+
+
+
+
+
+
+export const testchats = [
+  { "user": "sender", "msg": "Hey, how are you?" },
+  { "user": "receiver", "msg": "I'm good, what about yourrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr?" },
+  { "user": "receiver", "msg": "Did you complete the project?" },
+  { "user": "sender", "msg": "Almost, just fixing some bugs." },
+  { "user": "receiver", "msg": "Cool! Need any help?" },
+  { "user": "sender", "msg": "Maybe, I'll let you know." },
+  { "user": "receiver", "msg": "Okay, don't stress too much." },
+  { "user": "sender", "msg": "Haha thanks, trying my best." },
+  { "user": "sender", "msg": "By the way, are you free tonight?" },
+  { "user": "receiver", "msg": "Yes, after 8 PM. Why?" },
+  { "user": "sender", "msg": "Let's catch up for coffee." },
+  { "user": "receiver", "msg": "Sounds perfect!" },
+  { "user": "receiver", "msg": "Where do you want to meet?" },
+  { "user": "sender", "msg": "How about the new cafe downtown?" },
+  { "user": "receiver", "msg": "Great idea, I wanted to try it too." },
+  { "user": "sender", "msg": "Then it's a plan!" },
+  { "user": "receiver", "msg": "Awesome, see you there." },
+  { "user": "sender", "msg": "Sure, see you at 8:30." },
+  { "user": "receiver", "msg": "Perfect timing." },
+  { "user": "sender", "msg": "Oh, and bring your laptop." },
+  { "user": "receiver", "msg": "Haha, work + coffee?" },
+  { "user": "sender", "msg": "Exactly 😅" },
+  { "user": "receiver", "msg": "Fine, but only if you pay." },
+  { "user": "sender", "msg": "Deal! 😎" },
+  { "user": "receiver", "msg": "Okay then, see you soon!" }
+]

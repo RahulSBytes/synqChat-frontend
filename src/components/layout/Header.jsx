@@ -2,7 +2,7 @@ import {Bell} from 'lucide-react'
 
 function Header() {
   return (
-    <div className="navbar bg-base-100  px-3 bg-[#242424]">
+    <div className="navbar  px-3 bg-[#242424] ">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
