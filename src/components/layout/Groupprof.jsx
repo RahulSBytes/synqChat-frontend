@@ -1,8 +1,14 @@
 import { Dot } from "lucide-react"
+import { useNavigate } from 'react-router-dom'
 
-function Groupprof({ name, lastMessage, time, isGroupChat = false, dp = '' }) {
+
+function Groupprof({ name, lastMessage, id, time, isGroupChat = false, dp = '' }) {
+
+    const nevigate = useNavigate();
+
+
     return (
-        <div className="flex gap-2 items-center justify-between ">
+        <div onClick={() => nevigate(`/chat/${id}`)} className="flex gap-2 items-center justify-between ">
             <div className="flex gap-2 flex-1 items-center">
 
                 {!isGroupChat ?
