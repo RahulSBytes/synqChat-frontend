@@ -1,60 +1,25 @@
-import React from 'react'
-
-
-/////// not used anywhere
+import { Bell, LogOut, Plus, Settings, UserPlus, Users } from 'lucide-react'
 
 function Navbar() {
   return (
-    <div><ul className="menu bg-base-200 rounded-box">
-  <li>
-    <a className="tooltip tooltip-right" data-tip="Home">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    </a>
-  </li>
-  <li>
-    <a className="tooltip tooltip-right" data-tip="Details">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    </a>
-  </li>
-  <li>
-    <a className="tooltip tooltip-right" data-tip="Stats">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    </a>
-  </li>
-</ul></div>
+    <nav className="flex flex-col items-center justify-end  bg-[#3B3B3B] w-[5rem]">
+      <div className='flex flex-col flex-1 justify-center gap-10'>
+        <span className='flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><Plus size={22} strokeWidth={2.5}/></span>
+        <span className='flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'> <Users size={22} strokeWidth={2.5}/></span>
+        <div className="indicator relative flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer">
+          <Bell className='' size={22} strokeWidth={2.5}/>
+          <span className="badge badge-xs badge-primary bg-[#248F60] indicator-item  absolute top-1 right-1">10</span>
+        </div>
+        <span className='flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><LogOut size={22} strokeWidth={2.5} /></span>
+      </div>
+
+      <div className='flex flex-col justify-center gap-3  h-40 items-center'>
+        <span className='flex justify-center items-center p-1 rounded-md hover:bg-[#313131] hover:rotate-90 cursor-pointer'><Settings strokeWidth={2.5} /></span>
+
+        <span className='w-full h-[0.7px] bg-zinc-300' />
+        <img src="/image.png" className='h-6 mt-1 rounded-sm w-6 hover:scale-[1.08]' />
+      </div>
+    </nav>
   )
 }
 
