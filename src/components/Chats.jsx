@@ -35,18 +35,21 @@ function Chats() {
 
 
   return (
-    <div className=' h-full flex flex-col gap-3 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]'>
-      <div className='sticky bg-[#242424] top-0 z-10 flex justify-between items-center p-3'>
+    <div className='flex-1 min-w-0 h-full flex flex-col gap-3 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]'>
+      <div className='sticky bg-[#242424] top-0 z-10 flex justify-between items-center p-3 px-8'>
         <div className='flex items-center'>
-          <img src="/image.png" className='h-10 rounded-full mr-2 border-1 border-zinc-600' />
+          <img src="/image.png" className='h-10 rounded-full mr-2 border-2 border-zinc-600' />
           <div className='flex flex-col'>
             <span className='font-semibold'>krishna kumar vishwakarma</span>
             <span className='text-xs font-medium text-[#248f60]'>Online</span>
           </div>
         </div>
-        <Ellipsis className='rounded-lg w-7 h-5 bg-[#2a2a2a] cursor-pointer' />
+        <Ellipsis size={24} className='rounded-lg cursor-pointer' />
       </div>
-      <div className='px-6'>
+
+      {/* chat section */}
+
+      <div className='px-6 min-w-0'>
         {
           testchats && testchats.map(({ user, msg }, index) => {
             return <div key={index} className={`chat ${user === "receiver" ? "chat-start" : "chat-end"}`}>

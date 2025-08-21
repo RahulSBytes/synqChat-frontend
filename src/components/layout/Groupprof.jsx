@@ -2,14 +2,14 @@ import { Dot } from "lucide-react"
 import { useNavigate } from 'react-router-dom'
 
 
-function Groupprof({ name, lastMessage, id, time, isGroupChat = false, dp = '' }) {
+function Groupprof({ name, lastMessage = '', noOfUnseenMsg = 0, id, time = '', isGroupChat = false, dp = '' }) {
 
     const nevigate = useNavigate();
 
 
     return (
-        <div onClick={() => nevigate(`/chat/${id}`)} className="flex gap-2 items-center justify-between ">
-            <div className="flex gap-2 flex-1 items-center">
+        <div onClick={() => nevigate(`/chat/${id}`)} className="flex gap-2 items-center p-2 pl-2 justify-between hover:bg-[#323232]">
+            <div className="flex gap-2 flex-1 items-center ">
 
                 {!isGroupChat ?
 
@@ -37,11 +37,14 @@ function Groupprof({ name, lastMessage, id, time, isGroupChat = false, dp = '' }
 
                 </div>
             </div>
-            <div className="flex flex-col items-end gap-2 mr-3 py-1">
+            <div className="flex flex-col items-end gap-2 mr-3 py-1 h-full">
                 <span className="text-xs text-zinc-300">{time}</span>
-                <span className="w-4 h-4 text-xs flex justify-center items-center bg-[#248f60] rounded-full font-medium">
-                    3
-                </span>
+
+                {
+                    noOfUnseenMsg>0 && <span className="w-4 h-4 text-xs flex justify-center items-center bg-[#248f60] rounded-full font-medium">
+                        {noOfUnseenMsg <= 20 ? noOfUnseenMsg : '20+'}
+                    </span>
+                }
             </div>
         </div>
     )

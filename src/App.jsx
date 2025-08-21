@@ -5,7 +5,7 @@ import ProtectRoute from "./components/auth/protectRoute";
 import Chats from "./components/Chats";
 
 // Lazy-loaded pages
-const Group = lazy(() => import("./components/Group"));
+// const Group = lazy(() => import("./components/Group"));
 const Login = lazy(() => import("./components/Login"));
 const NotFound = lazy(() => import("./components/NotFound"));
 const AdminLogin = lazy(() => import("./components/AdminLogin"));
@@ -30,14 +30,14 @@ const router = createBrowserRouter(
     <Route path="/">
 
       <Route index element={<Home />} />
-      <Route path="group" element={
+      {/* <Route path="group" element={
         <ProtectRoute user={user}>
           <LazyWrapper>
             <Group />
           </LazyWrapper>
         </ProtectRoute>
       }
-      />
+      /> */}
       <Route path="login" element={
         <LazyWrapper>
           <Login />

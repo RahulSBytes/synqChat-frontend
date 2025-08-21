@@ -5,5 +5,23 @@
 body{
     margin: 0;
     padding: 0;
+    /* height: 100%;
+    width: 100%; */
     box-sizing: border-box;
+}
+
+html{
+        height: 100%;
+    width: 100%;
+}
+
+
+.tooltip.tooltip-sm::after {
+  background-color: #fff;
+  color: black;
+}
+.tooltip.tooltip-sm::before {
+  font-size: 0.6rem; 
+  background-color: #fff;
+  color: black;
 }

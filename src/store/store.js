@@ -26,15 +26,12 @@ export const useMessagesStore = create((set) => ({
 
 
 export const useUIStore = create((set) => ({
-  isSidebarOpen: false,
-  isAddMemberModalOpen: false,
   isGroupIconClicked: false,
   setIsGroupIconClicked : ()=>set((state) => ({ isGroupIconClicked: !state.isGroupIconClicked })),
-
-  toggleSidebar: () =>
-    set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-
-  setAddMemberModal: (open) => set({ isAddMemberModalOpen: open }),
+  isNewGroupClicked: false,
+  setIsNewGroupClicked :()=>set((state) => ({ isNewGroupClicked: !state.isNewGroupClicked })),
+  isSearchPeopleClicked: false,
+  setIsSearchPeopleClicked :()=>set((state) => ({ isSearchPeopleClicked: !state.isSearchPeopleClicked })),
 }));
 
 
