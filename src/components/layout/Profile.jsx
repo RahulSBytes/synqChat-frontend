@@ -7,7 +7,7 @@ function Details() {
                 <img src="/image.png" className='h-14 rounded-full' />
                 <h4 className='font-semibold text-lg'>Jhon Doe</h4>
                 <p className='text-center text-sm'>example@gmail.com</p>
-                <p className='px-1 text-center text-zinc-300 text-xs'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed, incidunt!</p>
+                <p className='text-center text-zinc-300 text-xs'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed, incidunt!</p>
             </div>
             <div className=" flex flex-col mt-10 gap-6">
                 <h4 >Members [12]</h4>

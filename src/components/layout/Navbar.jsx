@@ -3,7 +3,7 @@ import { useUIStore } from '../../store/store.js'
 import '../../index.css'
 
 function Navbar() {
-  const { setIsGroupIconClicked, setIsNewGroupClicked, setIsSearchPeopleClicked } = useUIStore();
+  const { setIsGroupIconClicked, setIsNewGroupClicked, setIsSearchPeopleClicked, setIsNotificationClicked } = useUIStore();
 
   return (
     <nav className="hidden md:flex flex-col items-center justify-end  bg-[#3B3B3B] w-16">
@@ -12,7 +12,7 @@ function Navbar() {
 
         <span onClick={setIsNewGroupClicked} data-tip="new group" className='tooltip-sm tooltip tooltip-right flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><Plus size={22} strokeWidth={2.5} /></span>
         <span onClick={setIsGroupIconClicked} data-tip="groups" className='tooltip-sm tooltip tooltip-right flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'> <Users size={22} strokeWidth={2.5} /></span>
-        <div data-tip="notifications" className="tooltip-sm tooltip tooltip-right indicator relative flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer">
+        <div onClick={setIsNotificationClicked} data-tip="notifications" className="tooltip-sm tooltip tooltip-right indicator relative flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer">
           <Bell size={22} strokeWidth={2.5} />
 
           <span className="badge badge-xs badge-primary bg-[#248F60] indicator-item  absolute top-1 right-1">10</span>

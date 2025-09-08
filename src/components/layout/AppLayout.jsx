@@ -4,13 +4,17 @@ import Navbar from "./Navbar";
 import { useUIStore } from "../../store/store.js";
 import CreateGroupForm from "../CreateGroupForm.jsx";
 import FindDialog from "../FindDialog.jsx";
+import Notification from "../Notification.jsx";
+import { Menu, X } from "lucide-react";
 
 export default function AppLayout(WrappedComponent) {
 
   return function WithLayout(props) {
-    const isNewGroupClicked = useUIStore((state) => state.isNewGroupClicked)
-    const isSearchPeopleClicked = useUIStore((state) => state.isSearchPeopleClicked)
+    const { isNewGroupClicked, isSearchPeopleClicked, isNotificationClicked } = useUIStore();
+
     return (
+
+
 
       <div className="h-screen flex">
         {
@@ -18,6 +22,9 @@ export default function AppLayout(WrappedComponent) {
         }
         {
           isSearchPeopleClicked && <FindDialog />
+        }
+        {
+          isNotificationClicked && <Notification />
         }
         <Navbar />
 

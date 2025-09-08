@@ -41,7 +41,7 @@ function Groupprof({ name, lastMessage = '', noOfUnseenMsg = 0, id, time = '', i
                 <span className="text-xs text-zinc-300">{time}</span>
 
                 {
-                    noOfUnseenMsg>0 && <span className="w-4 h-4 text-xs flex justify-center items-center bg-[#248f60] rounded-full font-medium">
+                    noOfUnseenMsg > 0 && <span className="w-4 h-4 text-xs flex justify-center items-center bg-[#248f60] rounded-full font-medium">
                         {noOfUnseenMsg <= 20 ? noOfUnseenMsg : '20+'}
                     </span>
                 }

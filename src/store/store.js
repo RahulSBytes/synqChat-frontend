@@ -1,19 +1,20 @@
 import { create } from "zustand";
 
-export const useAuthStore = create((set) => ({
+export const useAuthStore = create((set) => ({ // just an object that contains variable and a coresponding function to alter its value
   user: null,
   isLoggedIn: false,
   setUser: (user) => set({ user, isLoggedIn: true }),
   logout: () => set({ user: null, isLoggedIn: false }),
 }));
 
-export const useChatsStore = create((set) => ({
+export const useChatsStore = create((set) => ({ 
   chats: [],
   selectedChatId: null,
 
   setChats: (chats) => set({ chats }),
   selectChat: (chatId) => set({ selectedChatId: chatId }),
 }));
+
 
 export const useMessagesStore = create((set) => ({
   messages: [],
@@ -32,6 +33,8 @@ export const useUIStore = create((set) => ({
   setIsNewGroupClicked :()=>set((state) => ({ isNewGroupClicked: !state.isNewGroupClicked })),
   isSearchPeopleClicked: false,
   setIsSearchPeopleClicked :()=>set((state) => ({ isSearchPeopleClicked: !state.isSearchPeopleClicked })),
+  isNotificationClicked: false,
+  setIsNotificationClicked :()=>set((state) => ({ isNotificationClicked: !state.isNotificationClicked })),
 }));
 
 

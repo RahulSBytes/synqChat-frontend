@@ -22,14 +22,14 @@ const FindDialog = () => {
           </div>
           <div className="flex flex-col gap-3 pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
             {userdata.map(({ dp, name, id, isGroupChat = false }) => (
-              <div className="flex justify-between pr-4">
+              <div className="items-center flex justify-between pr-4">
                 <div className="flex gap-2">
                   <img src={dp || '/image.png'} className="h-8 w-8 rounded-full border-[2px] border-[#248F60]" />
                   <span className="line-clamp-1 font-semibold">{name}</span>
                 </div>
-                <button className="px-4 rounded-md text-xs bg-[#248F60] text-white font-medium hover:bg-[#1f744e] transition">
-                  invite
-                </button> 
+               <button className=" px-3 h-6 rounded-md text-xs bg-[#248F60] text-white font-medium hover:bg-[#1f744e] transition">
+                                Invite
+                            </button>
               </div>
             ))}
           </div>

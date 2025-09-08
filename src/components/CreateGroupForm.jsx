@@ -7,7 +7,7 @@ const CreateGroupForm = () => {
 
   return (
     <div className="fixed inset-0  bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#3B3B3B] w-full max-w-md rounded-lg shadow-lg px-12 pt-8 pb-4 relative">
+      <div className="bg-[#3B3B3B] w-full md:max-w-md max-w-sm rounded-lg shadow-lg px-12 pt-8 pb-4 relative">
 
         <X onClick={setIsNewGroupClicked} className="absolute top-6 right-6 text-gray-500 hover:text-gray-700" size={20} strokeWidth={3} color="#c1c1c1" />
         <h2 className="text-xl font-semibold mb-6 text-center"> Create New Group </h2>
@@ -30,7 +30,7 @@ const CreateGroupForm = () => {
             </label>
             <div className="flex flex-col gap-3 pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
               {userdata.map(({ dp, name, id, isGroupChat = false }) => (
-                <div className="flex justify-between pr-4">
+                <div className="items-center flex justify-between pr-4">
                   <div className="flex gap-2">
                     <img src={dp || '/image.png'}
                       className="h-8 w-8 rounded-full border-[2px] border-[#248F60]" />
