@@ -1,5 +1,3 @@
-import React from 'react'
-import AppLayout from './layout/AppLayout'
 import { useUIStore } from '../store/store'
 
 
@@ -25,4 +23,4 @@ function Home() {
   )
 }
 
-export default AppLayout(Home)
+export default Home

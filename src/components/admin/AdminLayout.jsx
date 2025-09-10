@@ -1,12 +1,13 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
 
-function Dashboard() {
+function AdminLayout() {
   return (
     <div>
-      Dashboard
+        <nav>navbar</nav>
+        <Outlet/>
     </div>
   )
 }
 
-export default Dashboard
+export default AdminLayout

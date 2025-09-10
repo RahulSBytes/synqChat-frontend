@@ -5,18 +5,14 @@ import { useUIStore } from "../../store/store.js";
 import CreateGroupForm from "../CreateGroupForm.jsx";
 import FindDialog from "../FindDialog.jsx";
 import Notification from "../Notification.jsx";
-import { Menu, X } from "lucide-react";
+import { Outlet } from "react-router-dom";
 
-export default function AppLayout(WrappedComponent) {
+export default function AppLayout() {
 
-  return function WithLayout(props) {
     const { isNewGroupClicked, isSearchPeopleClicked, isNotificationClicked } = useUIStore();
 
     return (
-
-
-
-      <div className="h-screen flex">
+      <div className="h-screen flex overflow-hidden">
         {
           isNewGroupClicked && <CreateGroupForm />
         }
@@ -27,27 +23,20 @@ export default function AppLayout(WrappedComponent) {
           isNotificationClicked && <Notification />
         }
         <Navbar />
-
         {/* User List */}
-        <div className="hidden md:flex w-[250px] bg-[#353535]">
+        <div className="hidden md:flex w-[250px] bg-[#353535] h-full">
           <UsersList />
         </div>
 
         {/* Chat Section */}
-        <div className="flex-1 min-w-0 bg-[#212121]">
-          <WrappedComponent {...props} />
+        <div className="flex-1 min-w-0 bg-[#212121] h-full">
+          <Outlet/>
         </div>
 
         {/* Profile Details */}
-        <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px]">
+        <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px] h-full">
           <Profile />
         </div>
       </div>
-
-
-
-
     );
   };
-}
-

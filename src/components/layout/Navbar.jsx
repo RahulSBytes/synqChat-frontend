@@ -1,8 +1,26 @@
 import { Bell, LogOut, Plus, Settings, UserRoundSearch, Users } from 'lucide-react'
 import { useUIStore } from '../../store/store.js'
 import '../../index.css'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { server } from "../../constants/config.js"
+
 
 function Navbar() {
+
+  const navigate = useNavigate()
+
+  async function logoutHandler(){
+      const { data } = await axios.post( 
+    `${server}/api/v1/auth/logout`,
+    {}, 
+    { withCredentials: true }  // axios config 
+  ); 
+
+  navigate('/auth/login')
+
+  }
+
   const { setIsGroupIconClicked, setIsNewGroupClicked, setIsSearchPeopleClicked, setIsNotificationClicked } = useUIStore();
 
   return (
@@ -17,11 +35,11 @@ function Navbar() {
 
           <span className="badge badge-xs badge-primary bg-[#248F60] indicator-item  absolute top-1 right-1">10</span>
         </div>
-        <span data-tip="logout" className='tooltip-sm tooltip tooltip-right flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><LogOut size={22} strokeWidth={2.5} /></span>
+        <span onClick={logoutHandler} data-tip="logout" className='tooltip-sm tooltip tooltip-right flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><LogOut size={22} strokeWidth={2.5} /></span>
       </div>
 
       <div className='flex flex-col justify-center gap-3  h-40 items-center'>
-        <span className='flex justify-center items-center p-1 rounded-md hover:bg-[#313131] hover:rotate-90 cursor-pointer'><Settings strokeWidth={2} /></span>
+        <span onClick={()=>navigate('/settings')} className='flex justify-center items-center p-1 rounded-md hover:bg-[#313131] hover:rotate-90 cursor-pointer'><Settings strokeWidth={2} /></span>
 
         <span className='w-full h-[0.7px] bg-zinc-300' />
         <img src="/image.png" className='h-7 mt-1 rounded-sm w-7 hover:scale-[1.08]' />
