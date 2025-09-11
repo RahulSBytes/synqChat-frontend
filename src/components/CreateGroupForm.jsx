@@ -1,9 +1,14 @@
 import { Check, X } from "lucide-react";
 import { useUIStore } from "../store/store";
 import { userdata } from "./constants/userdata.js";
-const CreateGroupForm = () => {
 
+
+
+const CreateGroupForm = () => {
   const setIsNewGroupClicked = useUIStore((state) => state.setIsNewGroupClicked)
+  function onSubmitHandler(){
+
+  }
 
   return (
     <div className="fixed inset-0  bg-black/50 flex items-center justify-center z-50">
@@ -19,18 +24,17 @@ const CreateGroupForm = () => {
             </label>
             <input
               type="text"
+              required
               placeholder="Enter group name"
               className="w-full rounded border border-gray-300 px-3 py-1 outline-none "
             />
           </div>
 
           <div className="">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Members
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2"> Members </label>
             <div className="flex flex-col gap-3 pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
               {userdata.map(({ dp, name, id, isGroupChat = false }) => (
-                <div className="items-center flex justify-between pr-4">
+                <div key={id} className="items-center flex justify-between pr-4">
                   <div className="flex gap-2">
                     <img src={dp || '/image.png'}
                       className="h-8 w-8 rounded-full border-[2px] border-[#248F60]" />
@@ -42,7 +46,6 @@ const CreateGroupForm = () => {
                     <Check size={16} strokeWidth={3} color="#248F60"/>
                   </label>
                 </div>
-
               ))}
             </div>
             <button className="btn btn-block mt-4 h-8 px-4 rounded-md text-sm bg-[#248F60] text-white font-medium hover:bg-[#1f744e] transition">Create</button>

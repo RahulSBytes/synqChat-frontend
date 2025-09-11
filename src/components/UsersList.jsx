@@ -8,12 +8,16 @@ import axios from 'axios'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { useChatStore } from '../store/chatStore.js'
+import { useAuthStore } from '../store/authStore.js'
 
 
 function UsersList() {
 
+  const [search, setSearch] = useState('')
   const setContacts = useChatStore(state => state.setContacts)
   const contacts = useChatStore(state => state.contacts)
+  const { user } = useAuthStore(state => state.user)
+
 
   useEffect(() => {
     async function fetchData() {
@@ -26,7 +30,19 @@ function UsersList() {
 
 
 
+  function handleSearch(string) {
+    setSearch(string);
+  }
 
+  const filteredContacts = contacts.filter((el) => {
+    if (search.trim() === '') return true; 
+    if (el.groupChat) {
+      return el.name?.toLowerCase().includes(search.toLowerCase());
+    } else {
+      const otherMember = el.members.find((member) => member._id !== user._id);
+      return otherMember?.fullName?.toLowerCase().includes(search.toLowerCase());
+    }
+  });
 
   const isGroupIconClicked = useUIStore((state) => state.isGroupIconClicked)
   const navigate = useNavigate()
@@ -38,6 +54,8 @@ function UsersList() {
       </div>
       <div className="flex bg-[#3B3B3B] m-auto rounded-full pl-4 pr-2 py-[3px] items-center">
         <input
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
           type="text"
           placeholder="seach contact"
           className="w-full bg-transparent outline-none text-sm pb-[2px]"
@@ -51,12 +69,12 @@ function UsersList() {
       {contacts && <div className="flex-1 flex flex-col gap-1 my-4 px-2 pl-4 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
         {
           isGroupIconClicked
-            ? contacts.map((chat) => (
+            ? filteredContacts.map((chat) => (
               chat.groupChat && (<Groupprof key={chat._id} data={chat}
               />
               )
             ))
-            : contacts.map((chat) => (
+            : filteredContacts.map((chat) => (
               <Groupprof
                 key={chat._id}
                 data={chat}
