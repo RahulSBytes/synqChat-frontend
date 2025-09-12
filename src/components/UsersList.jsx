@@ -16,7 +16,7 @@ function UsersList() {
   const [search, setSearch] = useState('')
   const setContacts = useChatStore(state => state.setContacts)
   const contacts = useChatStore(state => state.contacts)
-  const { user } = useAuthStore(state => state.user)
+  const user = useAuthStore(state => state.user)
 
 
   useEffect(() => {

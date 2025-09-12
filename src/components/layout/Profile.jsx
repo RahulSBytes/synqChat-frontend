@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 function Details() {
     const navigate = useNavigate()
     // Fix: Access user directly without creating new object
-    const { user } = useAuthStore((state) => state.user);
+    const user = useAuthStore((state) => state.user);
     const contacts = useChatStore((state) => state.contacts)
     // Fix: Use the correct field name
     const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)

@@ -42,7 +42,7 @@ function App() {
         withCredentials: true
       })
       .then(({ data }) => {
-        userExists({ user: data.data })
+        userExists(data.data)
       }).catch((err) => userNotExists())
   }, [])
 

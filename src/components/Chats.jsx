@@ -4,7 +4,7 @@ import { FileAudio2, FilePlay, FileText, Image, Menu, Paperclip, Send, SmilePlus
 import { useUIStore } from '../store/store';
 import { useChatStore } from '../store/chatStore.js';
 import { useAuthStore } from '../store/authStore.js';
-
+import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { server } from '../constants/config.js';
 import AttachmentGrid from './minicomponents/AttachmentGrid.jsx';
@@ -21,7 +21,7 @@ function Chats() {
 
   const [messages, setMessages] = useState([])
 
-  const { user } = useAuthStore((state) => state.user)
+  const user = useAuthStore((state) => state.user)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
 
   useEffect(() => {
@@ -45,8 +45,21 @@ function Chats() {
     setMsg(prev => prev + emoji)
   }
 
-  function handleSendMsg() {
-    // Send message logic here
+  const handleSendMsg = async (param) => {
+    const { text, attachment } = param;
+    const formData = new useForm();
+    formData.append('text', text)
+    formData.append('attachment', attachment[0])
+
+    console.log("forData",formData);
+
+    const { data } = await axios.post(`${server}/api/v1/auth/register`, formData, {
+      withCredentials: true,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    userExists(data)
+    navigate('/')
   }
 
   const autoResize = (e) => {
@@ -145,13 +158,14 @@ function Chats() {
                         </div>
                       </div>
                     )}
-                    <div className={`max-w-[65%] rounded-t-lg flex gap-1 flex-col`}>
+                    <div className={` max-w-[65%] rounded-t-lg flex gap-1 flex-col ${sender === user._id ? "items-start" : "items-end"}`}>
                       {attachments.length > 0 && (
-                        <div className="p-1 max-w-[50%] self-end">
+                        <label htmlFor='attachment' className={`p-1 max-w-[50%] `}>
                           <AttachmentGrid attachments={attachments} />
-                        </div>
+                          <input type="text" id='attachment' className='hidden'  />
+                        </label>
                       )}
-                      <div className={`py-2 px-3 w-fit self-end rounded-t-md ${sender === user._id ? " bg-[#353535] rounded-r-lg" : "bg-[#689969] rounded-l-lg"}`}>
+                      <div className={` py-2 px-3 w-fit rounded-t-md ${sender === user._id ? " bg-[#353535] rounded-r-lg " : "bg-[#689969] rounded-l-lg"}`}>
                         <span className="whitespace-pre-wrap break-words">{text}</span>
                       </div>
                     </div>
@@ -170,7 +184,7 @@ function Chats() {
       </div>
 
       {/* STICKY INPUT SECTION */}
-      <div className='sticky bottom-0 bg-[#242424] py-2 px-3 w-full border-t border-gray-700 relative'>
+      <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700 relative'>
         {isEmojiOpen && (
           <div className="absolute bottom-full left-0 w-full z-20">
             <EmojiPicker
@@ -185,7 +199,7 @@ function Chats() {
           </div>
         )}
 
-        <div className='flex items-center relative'>
+        <form className='flex items-center relative'>
           <div className='p-2 rounded-full hover:bg-[#313131] cursor-pointer relative'>
             {isAttachmentOpen && (
               <div className="absolute flex flex-col items-start bottom-12 left-0 bg-[#272727] p-2 gap-1 rounded-lg shadow-lg z-10 w-min">
@@ -219,11 +233,11 @@ function Chats() {
               placeholder="Type a message..."
               rows={1}
             />
-            <span onClick={handleSendMsg} className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'>
+            <button onClick={handleSendMsg} className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'>
               <Send size={20} width={24} height={24} color='#248f60' />
-            </span>
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   )
