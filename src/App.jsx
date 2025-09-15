@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import ProtectRoute from "./components/auth/protectRoute.jsx";
 import Chats from "./components/Chats";
 import { server } from './constants/config.js'
+import { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useAuthStore } from "./store/authStore.js";
 import AppLayout from "./components/layout/AppLayout.jsx";
@@ -36,7 +37,7 @@ function App() {
 
   const { user, loader, userNotExists, userExists } = useAuthStore()
 
-    useEffect(() => {
+  useEffect(() => {
     axios
       .get(`${server}/api/v1/users/getmyprofile`, {
         withCredentials: true
@@ -70,7 +71,12 @@ function App() {
   );
 
 
-  return loader ? <p>loading......</p> : <RouterProvider router={router} />;
+
+  return loader ?
+    <p>loading......</p> :
+    <><RouterProvider router={router} />
+      <Toaster position="bottom-center" />
+    </>;
 }
 
 export default App;

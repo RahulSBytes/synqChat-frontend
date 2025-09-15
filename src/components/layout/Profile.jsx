@@ -79,13 +79,13 @@ function Details() {
                     <div className='w-full flex flex-col items-center gap-1 flex-shrink-0'>
                         <img src={info.avatar.url} className='h-14 w-14 rounded-full object-cover' />
                         <h4 className='font-semibold text-lg'>{info.fullName}</h4>
-                        <p className='text-center text-sm'>{info.username}</p>
+                        <p className='text-center text-sm'>@{info.username}</p>
                         <p className='text-center text-sm'>{info.email}</p>
                         <p className='text-center text-zinc-300 text-xs'>{info.bio}</p>
                     </div>
                 )}
 
-                {/* Files Section - Fixed at bottom */}
+                {/* Files Section*/}
                 <div className="flex flex-col mt-4 gap-6 flex-shrink-0">
                     <div>
                         <h4 className='pb-1'>Files</h4>

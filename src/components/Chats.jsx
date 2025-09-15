@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EmojiPicker from 'emoji-picker-react';
-import { FileAudio2, FilePlay, FileText, Image, Menu, Paperclip, Send, SmilePlus, X } from 'lucide-react'
+import { Clapperboard, FileAudio, FileAudio2, FilePlay, FileText, Image, Menu, Paperclip, Send, SmilePlus, Video, X } from 'lucide-react'
 import { useUIStore } from '../store/store';
 import { useChatStore } from '../store/chatStore.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { server } from '../constants/config.js';
 import AttachmentGrid from './minicomponents/AttachmentGrid.jsx';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 function Chats() {
 
@@ -22,12 +24,16 @@ function Chats() {
   const [messages, setMessages] = useState([])
 
   const user = useAuthStore((state) => state.user)
+  const userExists = useAuthStore((state) => state.userExists)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
+
+  console.log("currentSelectedChatId ::", currentSelectedChatId);
 
   useEffect(() => {
     axios.get(`${server}/api/v1/chats/getmsgs/${currentSelectedChatId}`, { withCredentials: true })
       .then(({ data }) => setMessages(data.chat))
       .catch(err => console.log(err))
+
   }, [currentSelectedChatId])
 
 
@@ -45,22 +51,88 @@ function Chats() {
     setMsg(prev => prev + emoji)
   }
 
-  const handleSendMsg = async (param) => {
-    const { text, attachment } = param;
-    const formData = new useForm();
-    formData.append('text', text)
-    formData.append('attachment', attachment[0])
 
-    console.log("forData",formData);
+  // -------------------------------------
 
-    const { data } = await axios.post(`${server}/api/v1/auth/register`, formData, {
-      withCredentials: true,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
-    userExists(data)
-    navigate('/')
-  }
+
+  const handleFileSelect = (acceptedTypes) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = acceptedTypes;
+    input.multiple = true;
+
+    input.onchange = (e) => {
+      const newFiles = Array.from(e.target.files);
+
+      if (newFiles.length > 0) {
+        setSelectedFiles(currentFiles => {
+          const emptySpace = 6 - currentFiles.length;
+
+          let filesToAdd = [];
+
+          if (emptySpace <= 0 || newFiles.length > emptySpace) {
+            toast.error("only 6 files can be sent at a time.")
+            return currentFiles;
+          } else {
+            filesToAdd = newFiles.slice(0, emptySpace);
+          }
+
+          const updatedFiles = [...currentFiles, ...filesToAdd];
+          return updatedFiles;
+        });
+      }
+
+    };
+
+    input.onclick = setIsAttachmentOpen((prev) => !prev);
+
+    input.click();
+  };
+
+
+  async function handleSendMsg() {
+    const { text, attachment } = { text: msg, attachment: selectedFiles };
+
+    if (!text.trim() && (!attachment || attachment.length === 0)) {
+      toast.error("Something is missing");
+      return
+    };
+
+    const formData = new FormData();
+    formData.append('text', text);
+
+    if (attachment && attachment.length > 0) {
+      attachment.forEach((file) => {
+        formData.append("files", file);
+      });
+    }
+
+    try {
+      const res = await axios.post(
+        `${server}/api/v1/chats/sendMessage/${currentSelectedChatId}`,
+        formData,
+        { withCredentials: true }
+      );
+
+      setMsg('');
+      setSelectedFiles([]);
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  // Remove single file
+  const removeSelectedFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Clear all files
+  const clearAllFiles = () => setSelectedFiles([]);
+
+  // ---------------------------------
 
   const autoResize = (e) => {
     e.target.style.height = 'auto';
@@ -75,7 +147,7 @@ function Chats() {
   }
 
   const name = chatInfo.groupChat ? chatInfo.name : chatInfo.members.find((el) => el._id != user._id)?.fullName;
-  let avatar;
+  let avatar = '';
   if (!chatInfo.groupChat) avatar = chatInfo.members.find((el) => el._id != user._id).avatar.url;
 
 
@@ -103,14 +175,14 @@ function Chats() {
             <span className='font-semibold'>{name}</span>
             <span className='text-xs font-medium text-[#248f60]'>Online</span>
           </div>
-          <div className="drawer-content ml-auto">
+          <div className="drawer-content ml-auto md:hidden">
             <label htmlFor="my-drawer-4" className="drawer-button">
               <Menu />
             </label>
           </div>
         </div>
 
-        <div className="drawer drawer-end flex justify-end w-6">
+        <div className="drawer drawer-end flex justify-end w-6 md:hidden">
           <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
           {/* side bar code for mobile layout */}
           <div className="drawer-side">
@@ -150,24 +222,24 @@ function Chats() {
             <div className="flex flex-col gap-2">
               {messages.map(({ text, _id, sender, attachments }) => {
                 return (
-                  <div key={_id} className={`chat ${sender === user._id ? "chat-start" : "chat-end"}`}>
-                    {sender === user._id && (
+                  <div key={_id} className={`chat ${sender === user._id ? "chat-end" : "chat-start"}`}>
+                    {sender !== user._id && (
                       <div className="chat-image avatar">
                         <div className="w-8 rounded-full">
                           <img src="/image.png" alt="User avatar" />
                         </div>
                       </div>
                     )}
-                    <div className={` max-w-[65%] rounded-t-lg flex gap-1 flex-col ${sender === user._id ? "items-start" : "items-end"}`}>
+                    <div className={` w-full rounded-t-lg flex gap-1 flex-col ${sender === user._id ? "items-end" : "items-start"}`}>
                       {attachments.length > 0 && (
-                        <label htmlFor='attachment' className={`p-1 max-w-[50%] `}>
+                        <label htmlFor='attachment' className={`p-1 flex justify-end w-[40%]`}>
                           <AttachmentGrid attachments={attachments} />
-                          <input type="text" id='attachment' className='hidden'  />
+                          <input type="text" id='attachment' className='hidden' />
                         </label>
                       )}
-                      <div className={` py-2 px-3 w-fit rounded-t-md ${sender === user._id ? " bg-[#353535] rounded-r-lg " : "bg-[#689969] rounded-l-lg"}`}>
+                      {text.length > 0 && <div className={`max-w-[70%] py-2 px-3 rounded-t-md ${sender === user._id ? " bg-[#353535] rounded-l-lg " : "bg-[#689969] rounded-r-lg"}`}>
                         <span className="whitespace-pre-wrap break-words">{text}</span>
-                      </div>
+                      </div>}
                     </div>
                   </div>
                 )
@@ -202,18 +274,30 @@ function Chats() {
         <form className='flex items-center relative'>
           <div className='p-2 rounded-full hover:bg-[#313131] cursor-pointer relative'>
             {isAttachmentOpen && (
-              <div className="absolute flex flex-col items-start bottom-12 left-0 bg-[#272727] p-2 gap-1 rounded-lg shadow-lg z-10 w-min">
-                <span className='justify-start px-2 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-1 items-center w-full rounded cursor-pointer'>
-                  <Image size={14} />Image
+              <div className="absolute flex flex-col items-start bottom-12 left-0 bg-[#272727] p-2 gap-1 rounded-lg shadow-lg z-10 w-max">
+                <span
+                  onClick={() => handleFileSelect('image/*')}
+                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer whitespace-nowrap'
+                >
+                  <Image size={14} />Images
                 </span>
-                <span className='justify-start px-2 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-1 items-center w-full rounded cursor-pointer'>
-                  <FilePlay size={14} />Video
+                <span
+                  onClick={() => handleFileSelect('video/*')}
+                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer whitespace-nowrap'
+                >
+                  <FilePlay size={14} />Videos
                 </span>
-                <span className='justify-start px-2 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-1 items-center w-full rounded cursor-pointer'>
+                <span
+                  onClick={() => handleFileSelect('audio/*')}
+                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer whitespace-nowrap'
+                >
                   <FileAudio2 size={14} />Audio
                 </span>
-                <span className='justify-start px-2 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-1 items-center w-full rounded cursor-pointer'>
-                  <FileText size={14} />Document
+                <span
+                  onClick={() => handleFileSelect('*/*')}
+                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer whitespace-nowrap'
+                >
+                  <FileText size={14} />Documents
                 </span>
               </div>
             )}
@@ -224,18 +308,74 @@ function Chats() {
             <SmilePlus size={18} width={18} height={18} />
           </span>
 
-          <div className='flex items-center flex-1'>
-            <textarea
-              onInput={autoResize}
-              value={msg}
-              onChange={(e) => setMsg(e.target.value)}
-              className="w-full resize-none rounded-3xl px-4 outline-none min-h-[35px] max-h-[112px] py-2 overflow-y-auto scrollbar-thin scrollbar-track-transparent bg-[#353535] text-white"
-              placeholder="Type a message..."
-              rows={1}
-            />
-            <button onClick={handleSendMsg} className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'>
-              <Send size={20} width={24} height={24} color='#248f60' />
-            </button>
+          <div className='flex items-center flex-1 flex-col'>
+            {selectedFiles.length > 0 && (
+              <div className='w-full mb-2 p-2 bg-[#343434] rounded-lg'>
+                <div className='flex items-center justify-between mb-2'>
+                  {selectedFiles.length < 6 && (
+                    <div className=''>
+                      <span className='text-sm text-gray-200'>
+                        You can add {6 - selectedFiles.length} more
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={clearAllFiles}
+                    className='text-xs text-red-400 hover:text-red-300 px-1 py-[2px] rounded hover:bg-[#505050] transition-colors'
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <div className='flex flex-col gap-1 max-h-32 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]'>
+                  {selectedFiles.map((file, index) => (
+                    <div key={`${file.name}-${index}`} className='flex items-center justify-between bg-[#484848] px-2 py-1 rounded'>
+                      <div className='flex items-center flex-1 min-w-0'>
+                        <span className='mr-2'>
+                          {file.type.startsWith('image/') ? <Image/> :
+                            file.type.startsWith('video/') ? <Clapperboard /> :
+                              file.type.startsWith('audio/') ? <FileAudio /> : <FileText/>}
+                        </span>
+                        <div className='flex flex-col flex-1 min-w-0'>
+                          <span className='text-xs text-white truncate'>{file.name}</span>
+                          <span className='text-[10px] text-gray-400'>
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSelectedFile(index)}
+                        className='ml-2 p-1 hover:bg-[#606060] rounded-full text-red-400 text-sm leading-none'
+                        title="Remove file"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            )}
+
+            <div className='flex items-center w-full'>
+              <textarea
+                onInput={autoResize}
+                value={msg}
+                onChange={(e) => setMsg(e.target.value)}
+                className="w-full resize-none rounded-3xl px-4 outline-none min-h-[35px] max-h-[112px] py-2 overflow-y-auto scrollbar-thin scrollbar-track-transparent bg-[#353535] text-white"
+                placeholder={selectedFiles.length > 0 ? `Send ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} with message...` : "Type a message..."}
+                rows={1}
+              />
+              <button
+                type="button"
+                onClick={handleSendMsg}
+                className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'
+                disabled={!msg.trim() && selectedFiles.length === 0}
+              >
+                <Send size={20} width={24} height={24} color={(!msg.trim() && selectedFiles.length === 0) ? '#666' : '#248f60'} />
+              </button>
+            </div>
           </div>
         </form>
       </div>
