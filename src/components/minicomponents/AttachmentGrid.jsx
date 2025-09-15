@@ -1,6 +1,6 @@
 import { X, Play, Pause, Download, FileText, File, Eye, Music } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import {  textFiles } from '../constants/constants';
+import { textFiles } from '../constants/constants';
 
 const AttachmentGrid = ({ attachments }) => {
   const [viewAll, setViewAll] = useState(false);
@@ -181,25 +181,26 @@ const AttachmentGrid = ({ attachments }) => {
         : '';
 
       const textBasedFiles = textFiles;
-      const officeFiles = [
-        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'
-      ];
+      const officeDocs = ['doc', 'docx', 'ppt', 'pptx', 'pdf'];
+      const excelDocs = ['xls', 'xlsx'];
 
       const fetchContent = async () => {
         try {
-          if (textBasedFiles.includes(extension)) {
-            const response = await fetch(attachment.url);
-            const text = await response.text();
-            setContent({ type: 'text', value: text });
-          } else if (officeFiles.includes(extension)) {
+          if (officeDocs.includes(extension)) {
             setContent({
               type: 'iframe',
               value: `https://docs.google.com/viewer?url=${encodeURIComponent(
                 attachment.url
-              )}&embedded=true`
+              )}&embedded=true`,
+            });
+          } else if (excelDocs.includes(extension)) {
+            setContent({
+              type: 'iframe',
+              value: `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                attachment.url
+              )}`,
             });
           } else {
-            // fallback: try to render in an iframe
             setContent({ type: 'iframe', value: attachment.url });
           }
         } catch (err) {
