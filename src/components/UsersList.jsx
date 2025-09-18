@@ -20,12 +20,12 @@ function UsersList() {
 
 
   useEffect(() => {
-    async function fetchData() {
+    (async function() {
       axios.get(`${server}/api/v1/chats`, { withCredentials: true })
         .then(({ data }) => setContacts(data.chats))
         .catch(err => console.log(err))
-    }
-    fetchData();
+    })()
+
   }, [])
 
 
@@ -35,7 +35,7 @@ function UsersList() {
   }
 
   const filteredContacts = contacts.filter((el) => {
-    if (search.trim() === '') return true; 
+    if (search.trim() === '') return true;
     if (el.groupChat) {
       return el.name?.toLowerCase().includes(search.toLowerCase());
     } else {

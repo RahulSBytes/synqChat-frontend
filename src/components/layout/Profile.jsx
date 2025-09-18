@@ -3,112 +3,171 @@ import { ArrowUpRight, Clapperboard, Dot, FileAudio, FileMinus, Image } from 'lu
 import { useAuthStore } from '../../store/authStore.js';
 import { useChatStore } from '../../store/chatStore.js';
 import moment from "moment";
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react'
+import ShowProfileAttachmentList from '../minicomponents/ShowProfileAttachmentList.jsx';
 
 function Details() {
-    const navigate = useNavigate()
-    // Fix: Access user directly without creating new object
+
     const user = useAuthStore((state) => state.user);
     const contacts = useChatStore((state) => state.contacts)
-    // Fix: Use the correct field name
     const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
+    const messagesRelatedToChat = useChatStore((state) => state.messagesRelatedToChat)
 
-    // console.log("currentSelectedChatId ::", currentSelectedChatId)
+    if (!user) return <p>loading.......!</p>
 
-    // Add null checks to prevent runtime errors
+    const categorized = useMemo(() => {
+        const allAttachments = messagesRelatedToChat
+            .map((message) => message.attachments)
+            .flat()
+            .filter(Boolean); // Filter out null/undefined attachments
+
+        const groups = {
+            raw: [],
+            audio: [],
+            video: [],
+            image: [],
+        };
+
+        for (const att of allAttachments) {
+            if (groups[att.fileType]) {
+                groups[att.fileType].push(att);
+            }
+        }
+
+        return groups;
+    }, [messagesRelatedToChat]);
+
+    // Use an object to track which file types are expanded
+    const [expandedFileTypes, setExpandedFileTypes] = useState({});
+
     if (!contacts || !currentSelectedChatId) {
         return <p>No chat selected or contacts not loaded</p>
     }
 
-    const chatInfo = contacts.find((el) => el._id === currentSelectedChatId)
-    const info = chatInfo.members.find((el) => el._id != user._id)
+    const selectedChatInfo = contacts.find((el) => el._id === currentSelectedChatId)
+    const info = selectedChatInfo?.members?.find((el) => el._id != user._id)
 
-    // console.log('chatInfo :: ', chatInfo);
-    // Add additional safety check
-    if (!chatInfo) {
+    if (!selectedChatInfo) {
         return <p>Chat information not found</p>
     }
 
-    if (!user) return <p>loading.......!</p>
+    const filesObject = [
+        {
+            label: "Documents",
+            count: categorized.raw.length,
+            icon: FileMinus,
+            files: categorized.raw,
+            key: 'documents'
+        },
+        {
+            label: "Videos",
+            count: categorized.video.length,
+            icon: Clapperboard,
+            files: categorized.video,
+            key: 'videos'
+        },
+        {
+            label: "Audios",
+            count: categorized.audio.length,
+            icon: FileAudio,
+            files: categorized.audio,
+            key: 'audios'
+        },
+        {
+            label: "Images",
+            count: categorized.image.length,
+            icon: Image,
+            files: categorized.image,
+            key: 'images'
+        },
+    ]
+
+    const toggleFileType = (fileKey) => {
+        setExpandedFileTypes(prev => ({
+            ...prev,
+            [fileKey]: !prev[fileKey]
+        }));
+    };
+
+    const closeAttachmentList = (fileKey) => {
+        setExpandedFileTypes(prev => ({
+            ...prev,
+            [fileKey]: false
+        }));
+    };
 
     return (
         <aside className="hidden lg:flex bg-[#242424] flex-col px-6 py-8 min-h-0 overflow-hidden">
             <div className="flex flex-col min-h-0 flex-1">
-                {chatInfo.groupChat ? (
-                    <div className='flex gap-4 flex-col min-h-0 flex-1'>
+
+                {/* ---------for group chat------------ */}
+                {selectedChatInfo.groupChat ? (
+                    <div className=' flex gap-4 flex-col py-4'>
                         {/* Profile Section - Fixed height */}
                         <div className='w-full flex flex-col items-center flex-shrink-0'>
-                            <div className="flex-col p-6 w-14 h-14 gap-1 flex bg-zinc-500 rounded-full justify-center items-center">
-                                <div className="flex gap-1">
-                                    <div className="h-[12px] w-[12px] bg-zinc-800 rounded-sm"></div>
-                                    <div className="h-[12px] w-[12px] bg-zinc-800 rounded-sm"></div>
-                                </div>
-                                <div className="flex gap-1">
-                                    <div className="h-[12px] w-[12px] bg-zinc-800 rounded-sm"></div>
-                                    <div className="h-[12px] w-[12px] bg-zinc-800 rounded-sm"></div>
-                                </div>
-                            </div>
-                            <h4 className='font-semibold text-lg mt-2'>{chatInfo.name}</h4>
-                            <p className='text-center text-sm'>{moment(chatInfo.createdAt).fromNow()}</p>
-                            <p className='text-center text-sm'>{chatInfo.creator.fullName}</p>
-                        </div>
-
-                        {/* Members Section - Scrollable */}
-                        <div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
-                            <h4 className='py-2 flex-shrink-0'>Members [{chatInfo.members?.length || 0}]</h4>
-                            <div className='flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444] pr-2'>
-                                {chatInfo.members?.map((el) => (
-                                    <div key={el._id} className="flex py-2 hover:bg-[#292929] flex-shrink-0">
-                                        <div className='relative'>
-                                            <img
-                                                src={el.avatar?.url || el.avatar}
-                                                className="h-7 w-7 rounded-full mx-2 object-cover"
-                                                alt={`${el.fullName} avatar`}
-                                            />
-                                            <Dot className='absolute right-5 bottom-3' size={30} strokeWidth={3} color='#5dbb63' />
-                                        </div>
-                                        <div className="flex">
-                                            <span className='flex items-center text-sm font-semibold'>{el.fullName}</span>
-                                        </div>
-                                    </div>
-                                )) || <p>No members found</p>}
-                            </div>
+                            <img
+                                className="h-16 w-16 rounded-full"
+                                src={selectedChatInfo.avatar?.url || '../../../public/image.png'}
+                                alt="Group avatar"
+                            />
+                            <h4 className='font-semibold text-lg mt-2'>{selectedChatInfo.name}</h4>
+                            <p className='text-center text-zinc-400 text-sm font-handwriting'>{selectedChatInfo.members.length} members</p>
+                            <p className='text-center text-xs text-zinc-300 font-handwriting'>{selectedChatInfo.bio || selectedChatInfo.description}</p>
                         </div>
                     </div>
                 ) : (
-                    <div className='w-full flex flex-col items-center gap-1 flex-shrink-0'>
-                        <img src={info.avatar.url} className='h-14 w-14 rounded-full object-cover' />
-                        <h4 className='font-semibold text-lg'>{info.fullName}</h4>
-                        <p className='text-center text-sm'>@{info.username}</p>
-                        <p className='text-center text-sm'>{info.email}</p>
-                        <p className='text-center text-zinc-300 text-xs'>{info.bio}</p>
-                    </div>
+                    // -------------------- direct conversation ----------------------------
+                    info && (
+                        <div className=' w-full flex flex-col items-center py-4 gap-1 flex-shrink-0'>
+                            <img
+                                src={info.avatar?.url || '../../../public/image.png'}
+                                className='h-14 w-14 rounded-full object-cover'
+                                alt={`${info.fullName} avatar`}
+                            />
+                            <h4 className='font-semibold text-lg'>{info.fullName}</h4>
+                            <p className='text-center text-sm font-handwriting text-zinc-400 '>@{info.username}</p>
+                            <p className='text-center font-handwriting text-xs text-zinc-300'>{info.bio}</p>
+                        </div>
+                    )
                 )}
 
-                {/* Files Section*/}
+                <hr />
                 <div className="flex flex-col mt-4 gap-6 flex-shrink-0">
                     <div>
-                        <h4 className='pb-1'>Files</h4>
+                        <h4 className='pb-2'>Shared files</h4>
                         <div className='flex flex-col gap-1'>
-                            <span className='flex justify-between hover:bg-[#313131] cursor-pointer items-center p-1 py-2 pr-3'>
-                                <span className='flex gap-1 text-sm'><FileMinus /> Document</span>
-                                <ArrowUpRight size={16} color='#5dbb63' />
-                            </span>
-                            <span className='flex justify-between cursor-pointer hover:bg-[#313131] items-center p-1 py-2 pr-3'>
-                                <span className='flex gap-1 text-sm'><Image /> Images</span>
-                                <ArrowUpRight size={16} color='#5dbb63' />
-                            </span>
-                            <span className='flex justify-between cursor-pointer hover:bg-[#313131] items-center p-1 py-2 pr-3'>
-                                <span className='flex gap-1 text-sm'><Clapperboard /> Videos</span>
-                                <ArrowUpRight size={16} color='#5dbb63' />
-                            </span>
-                            <span className='flex justify-between cursor-pointer hover:bg-[#313131] items-center p-1 py-2 pr-3'>
-                                <span className='flex gap-1 text-sm'><FileAudio /> Audios</span>
-                                <ArrowUpRight size={16} color='#5dbb63' />
-                            </span>
+                            {filesObject.map((el) => (
+                                <div key={el.key}>
+                                    <div
+                                        onClick={() => toggleFileType(el.key)}
+                                        className='flex justify-between hover:bg-[#313131] cursor-pointer items-center p-1 py-2 pr-3'
+                                    >
+                                        <div className='flex gap-1 items-center text-sm'>
+                                            <el.icon />
+                                            <div className='flex flex-col'>
+                                                <span className='text-sm text-zinc-100'>{el.label}</span>
+                                                <span className='text-[10px] font-handwriting text-zinc-400'>{el.count} files</span>
+                                            </div>
+                                        </div>
+                                        <ArrowUpRight size={16} color='#5dbb63' />
+                                    </div>
+
+                                    {expandedFileTypes[el.key] && el.files.length > 0 && (
+                                        <ShowProfileAttachmentList
+                                            files={el.files}
+                                            onClose={() => closeAttachmentList(el.key)}
+                                        />
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
+            </div>
+            {/* <hr /> */}
+            <div className=''>
+                <button className='text-sm mb-1'> Delete all messages </button>
+                <button className='text-sm text-red-400 hover:text-red-300'>Block this contact <input type="checkbox" defaultChecked className="checkbox checkbox-accent checkbox-xs ml-1" /></button>
             </div>
         </aside>
     )

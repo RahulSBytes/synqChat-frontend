@@ -3,6 +3,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { Clapperboard, FileAudio, FileAudio2, FilePlay, FileText, Image, Menu, Paperclip, Send, SmilePlus, Video, X } from 'lucide-react'
 import { useUIStore } from '../store/store';
 import { useChatStore } from '../store/chatStore.js';
+import moment from 'moment'
 import { useAuthStore } from '../store/authStore.js';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -21,25 +22,25 @@ function Chats() {
   const [msg, setMsg] = useState('');
   const messagesEndRef = useRef(null);
 
-  const [messages, setMessages] = useState([])
 
   const user = useAuthStore((state) => state.user)
   const userExists = useAuthStore((state) => state.userExists)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
+  const messagesRelatedToChat = useChatStore((state) => state.messagesRelatedToChat)
+  const setMessagesRelatedToChat = useChatStore((state) => state.setMessagesRelatedToChat)
 
-  console.log("currentSelectedChatId ::", currentSelectedChatId);
+
 
   useEffect(() => {
     axios.get(`${server}/api/v1/chats/getmsgs/${currentSelectedChatId}`, { withCredentials: true })
-      .then(({ data }) => setMessages(data.chat))
+      .then(({ data }) => setMessagesRelatedToChat(data.chat))
       .catch(err => console.log(err))
-
   }, [currentSelectedChatId])
 
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-  }, [messages]);
+  }, [messagesRelatedToChat]);
 
 
   useEffect(() => {
@@ -152,6 +153,15 @@ function Chats() {
 
 
 
+  // function handleTimeSection(createdAt) {
+  //   if (moment(createdAt).format('YYYY-MM-DD') !== timeSection) {
+  //     console.log("the time was not equal on ::", timeSection)
+  //     setTimeSection(moment(createdAt).format('YYYY-MM-DD'))
+  //     return <span>{timeSection}</span>
+  //   }
+  // }
+
+
   return (
     <div className='flex-1 min-w-0 h-full flex flex-col relative'>
       {/* STICKY HEADER */}
@@ -215,34 +225,68 @@ function Chats() {
 
       {/* MESSAGES SECTION - SCROLLABLE WITH BOTTOM-TO-TOP FLOW */}
       <div className='flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444] px-6 py-4 flex flex-col'>
-        {(messages.length > 0) ? (
+        {messagesRelatedToChat.length > 0 ? (
           <>
             {/* Spacer to push messages to bottom when few messages */}
-            <div className="flex-1 min-h-0"></div>
             <div className="flex flex-col gap-2">
-              {messages.map(({ text, _id, sender, attachments }) => {
+              {messagesRelatedToChat.map(({ text, _id, sender, attachments, createdAt }, index) => {
+                const msgDate = moment(createdAt).format('DD-MM-YYYY');
+                const prevMsgDate =
+                  index > 0
+                    ? moment(messagesRelatedToChat[index - 1].createdAt).format('DD-MM-YYYY')
+                    : null;
+                const isDateTransition = msgDate !== prevMsgDate;
+
                 return (
-                  <div key={_id} className={`chat ${sender === user._id ? "chat-end" : "chat-start"}`}>
-                    {sender !== user._id && (
-                      <div className="chat-image avatar">
-                        <div className="w-8 rounded-full">
-                          <img src="/image.png" alt="User avatar" />
-                        </div>
+                  <div key={_id}>
+                    {/* Date separator only when the date changes */}
+                    {isDateTransition && (
+                      <div className="text-center text-xs my-2 text-gray-500">
+                        {moment(createdAt).calendar(null, {
+                          sameDay: '[Today]',
+                          lastDay: '[Yesterday]',
+                          lastWeek: 'dddd, MMM D',
+                          sameElse: 'MMMM D, YYYY'
+                        })}
                       </div>
                     )}
-                    <div className={` w-full rounded-t-lg flex gap-1 flex-col ${sender === user._id ? "items-end" : "items-start"}`}>
-                      {attachments.length > 0 && (
-                        <label htmlFor='attachment' className={`p-1 flex justify-end w-[40%]`}>
-                          <AttachmentGrid attachments={attachments} />
-                          <input type="text" id='attachment' className='hidden' />
-                        </label>
+
+                    <div className={`chat ${sender === user._id ? 'chat-end' : 'chat-start'}`}>
+                      {sender !== user._id && (
+                        <div className="chat-image avatar">
+                          <div className="w-8 rounded-full">
+                            <img src="/image.png" alt="User avatar" />
+                          </div>
+                        </div>
                       )}
-                      {text.length > 0 && <div className={`max-w-[70%] py-2 px-3 rounded-t-md ${sender === user._id ? " bg-[#353535] rounded-l-lg " : "bg-[#689969] rounded-r-lg"}`}>
-                        <span className="whitespace-pre-wrap break-words">{text}</span>
-                      </div>}
+                      <div
+                        className={`w-full rounded-t-lg flex gap-1 flex-col ${sender === user._id ? 'items-end' : 'items-start'
+                          }`}
+                      >
+                        {attachments.length > 0 && (
+                          <label htmlFor="attachment" className={`p-1 flex justify-end w-[40%]`}>
+                            <AttachmentGrid attachments={attachments} />
+                            <input type="text" id="attachment" className="hidden" />
+                          </label>
+                        )}
+                        {text.length > 0 && (
+                          <div
+                            className={`max-w-[70%] py-2 px-3 rounded-t-md ${sender === user._id
+                                ? ' bg-[#353535] rounded-l-lg '
+                                : 'bg-[#689969] rounded-r-lg'
+                              }`}
+                          >
+                            <span className="whitespace-pre-wrap break-words">{text}</span>
+                          </div>
+                        )}
+                        {/* message time */}
+                        <span className="text-[10px] text-gray-400">
+                          {moment(createdAt).format('hh:mm a')}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                )
+                );
               })}
               {/* Scroll anchor */}
               <div ref={messagesEndRef} />
@@ -256,7 +300,7 @@ function Chats() {
       </div>
 
       {/* STICKY INPUT SECTION */}
-      <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700 relative'>
+      <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700'>
         {isEmojiOpen && (
           <div className="absolute bottom-full left-0 w-full z-20">
             <EmojiPicker
@@ -332,9 +376,9 @@ function Chats() {
                     <div key={`${file.name}-${index}`} className='flex items-center justify-between bg-[#484848] px-2 py-1 rounded'>
                       <div className='flex items-center flex-1 min-w-0'>
                         <span className='mr-2'>
-                          {file.type.startsWith('image/') ? <Image/> :
+                          {file.type.startsWith('image/') ? <Image /> :
                             file.type.startsWith('video/') ? <Clapperboard /> :
-                              file.type.startsWith('audio/') ? <FileAudio /> : <FileText/>}
+                              file.type.startsWith('audio/') ? <FileAudio /> : <FileText />}
                         </span>
                         <div className='flex flex-col flex-1 min-w-0'>
                           <span className='text-xs text-white truncate'>{file.name}</span>

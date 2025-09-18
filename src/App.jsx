@@ -35,7 +35,7 @@ const LazyWrapper = ({ children }) => (
 
 function App() {
 
-  const { user, loader, userNotExists, userExists } = useAuthStore()
+  const { loader, userNotExists, userExists } = useAuthStore()
 
   useEffect(() => {
     axios
@@ -43,9 +43,13 @@ function App() {
         withCredentials: true
       })
       .then(({ data }) => {
-        userExists(data.data)
-      }).catch((err) => userNotExists())
-  }, [])
+        userExists(data.data);
+      })
+      .catch((err) => {
+        console.log("error fetching loggedin user data:", err);
+        userNotExists();
+      })
+  }, [userExists, userNotExists])
 
   const router = createBrowserRouter(
     createRoutesFromElements(

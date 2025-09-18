@@ -13,9 +13,11 @@ export const useChatStore = create(
     currentSelectedChatId: null,
     setCurrentSelectedChatId: (chatId) => set({ currentSelectedChatId: chatId }),
 
+    messagesRelatedToChat: [],
+    setMessagesRelatedToChat: (messages) => set({ messagesRelatedToChat: messages }),
+
     // Add missing newMessagesAlert field that's used in setNewMessagesAlert
     newMessagesAlert: [],
-
     incrementNotification: () =>
       set((state) => ({ notificationCount: state.notificationCount + 1 })),
 

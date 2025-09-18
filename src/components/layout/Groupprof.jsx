@@ -8,16 +8,15 @@ import { server } from "../../constants/config.js";
 
 function Groupprof({ data }) {
 
-    const {user} = useAuthStore((state) => state.user);
+    const { user } = useAuthStore((state) => state.user);
     const noOfUnseenMsg = 9;
     const navigate = useNavigate();
 
     // Fix: Use setCurrentSelectedChatId instead of setMessages for chat selection
     const setCurrentSelectedChatId = useChatStore(state => state.setCurrentSelectedChatId)
-    const contacts = useChatStore((state) => state.contacts)
+    const currentSelectedChatId = useChatStore(state => state.currentSelectedChatId)
 
     function contactClickHandler(chatId) {
-        // Fix: Set the selected chat ID, not messages
         setCurrentSelectedChatId(chatId);
         navigate(`/chats/${chatId}`)
     }
@@ -28,30 +27,17 @@ function Groupprof({ data }) {
         return <div>Loading chat...</div>
     }
 
-    return (
-        <div onClick={() => contactClickHandler(data._id)} className="flex gap-2 items-center p-2 pl-2 justify-between hover:bg-[#323232] cursor-pointer">
-            <div className="flex gap-2 flex-1 items-center ">
+   
 
-                {!data.groupChat ?
-                    <div className='relative'>
-                        {/* Fix: Use actual otherUser data instead of string literal */}
-                        <img src={otherUser?.avatar?.url || '/image.png'}
-                            className="h-8 w-8 rounded-full object-cover"
-                            alt={`${otherUser?.fullName || 'User'} avatar`} />
-                        <Dot className='absolute right-4 bottom-3' size={30} strokeWidth={3} color='#5dbb63' />
-                    </div>
-                    :
-                    <div className="flex-col p-2 w-8 h-8 gap-1 flex bg-zinc-500 rounded-full justify-center items-center">
-                        <div className="flex gap-1">
-                            <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-                            <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-                        </div>
-                        <div className="flex gap-1">
-                            <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-                            <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-                        </div>
-                    </div>
-                }
+    return (
+        <div onClick={() => contactClickHandler(data._id)} className={`flex gap-2 items-center p-2 pl-2 justify-between hover:bg-[#323232] cursor-pointer ${currentSelectedChatId === data._id ? 'bg-[#323232]' : ''}`}>
+            <div className="flex gap-2 flex-1 items-center ">
+                <div className='relative'>
+                    {/* Fix: Use actual otherUser data instead of string literal */}
+                    <img src={data.groupChat ? data.avatar.url || '../../../image.png' : otherUser.avatar.url}
+                        className="border w-8 h-8  rounded-full object-cover" />
+                    {!data.groupChat && <Dot className='absolute right-4 bottom-3' size={30} strokeWidth={3} color='#5dbb63' />}
+                </div>
 
                 <div className="flex-1 items-center">
                     {/* Fix: Use actual dynamic values instead of string literals */}

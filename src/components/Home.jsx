@@ -1,9 +1,9 @@
-import { useUIStore } from '../store/store'
+import { useUIStore } from '../store/store.js'
 
 
 function Home() {
 
-    const {setIsNewGroupClicked, setIsSearchPeopleClicked} = useUIStore()
+  const { setIsNewGroupClicked, setIsSearchPeopleClicked } = useUIStore();
 
   return (
     <div className="flex flex-1 flex-col h-full items-center justify-center p-6 text-center">

@@ -24,7 +24,7 @@ export default function AppLayout() {
         }
         <Navbar />
         {/* User List */}
-        <div className="hidden md:flex w-[250px] bg-[#353535] h-full">
+        <div className="hidden md:flex w-[300px] bg-[#353535] h-full">
           <UsersList />
         </div>
 

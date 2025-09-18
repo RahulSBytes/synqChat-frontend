@@ -186,7 +186,15 @@ const AttachmentGrid = ({ attachments }) => {
 
       const fetchContent = async () => {
         try {
-          if (officeDocs.includes(extension)) {
+          if (textBasedFiles.includes(extension)) {
+            const response = await fetch(attachment.url);
+            const textContent = await response.text();
+            setContent({
+              type: 'text',
+              value: textContent,
+            });
+          }
+          else if (officeDocs.includes(extension)) {
             setContent({
               type: 'iframe',
               value: `https://docs.google.com/viewer?url=${encodeURIComponent(
@@ -242,7 +250,7 @@ const AttachmentGrid = ({ attachments }) => {
           <div className="bg-gray-100 px-4 py-2 border-b">
             <div className="font-medium text-gray-900">{attachment.filename}</div>
           </div>
-          <div className="p-4 overflow-auto max-h-[calc(80vh-60px)]">
+          <div className="p-4 overflow-auto max-h-[calc(80vh-60px)] overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
             <pre className="text-sm text-gray-900 whitespace-pre-wrap font-mono">
               {content.value}
             </pre>
@@ -369,7 +377,7 @@ const AttachmentGrid = ({ attachments }) => {
                 )}
 
                 {/* File size overlay */}
-                <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 py-0.5 rounded">
+                <div className="absolute bottom-1 left-1 bg-zinc-800 bg-opacity-60 text-white text-[10px] px-1 py-0.5 rounded">
                   {formatFileSize(attachment.fileSize)}
                 </div>
 
