@@ -1,12 +1,10 @@
-import { Check, X, Upload, Camera, Trash2 } from "lucide-react";
+import { Check, X, Camera, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useUIStore } from "../store/store.js";
-// import { userdata } from "./constants/userdata.js";
-import { useChatStore } from "../store/chatStore.js";
 import { useAuthStore } from "../store/authStore.js";
 import { eligibleUserForGroupCreation } from "../helpers/helpers.js";
-import axios from "axios";
-import { server } from "../constants/config.js";
+import { useApiStore } from "../store/apiStore.js";
+import toast from "react-hot-toast";
 
 const CreateGroupForm = () => {
   const setIsNewGroupClicked = useUIStore((state) => state.setIsNewGroupClicked);
@@ -16,13 +14,14 @@ const CreateGroupForm = () => {
   const [description, setDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
 
-  const contacts = useChatStore((state) => state.contacts)
+  const contacts = useApiStore((state) => state.contacts)
+  const createGroup = useApiStore((state) => state.createGroup)
   const user = useAuthStore((state) => state.user)
 
 
   const userdata = eligibleUserForGroupCreation(contacts, user);
 
-  function onSubmitHandler(e) {
+  async function onSubmitHandler(e) {
     e.preventDefault();
 
     // Validation
@@ -45,22 +44,9 @@ const CreateGroupForm = () => {
       formData.append('avatar', selectedAvatar);
     }
 
-    // console.log("selectedMembers ::",typeof selectedMembers)
-    // console.log('Group Data:', [...formData]);
-
-
-    try {
-      const response = axios.post(`${server}/api/v1/chats`, formData, {
-        withCredentials: true
-      })
-
-      if (!response) {
-        console.log("error posting group data ")
-      }
-
-    } catch (error) {
-      console.error('Error creating group:', error);
-    }
+    const success = await createGroup(formData)
+    if (!success) return toast.error("error creating group")
+      toast.success("group created successfully")
 
     setIsNewGroupClicked();
   }

@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Camera, Eye, EyeOff, User, Mail, Clock, Palette, LogOut, Lock, Shield, Bell, ChevronLeft, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useMeta from '../../hooks/useMeta.js';
 
 export default function Settings() {
+  useMeta({ title: "setting", description: "this is setting page" })
+
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // State for form inputs
   const [formData, setFormData] = useState({
     fullName: 'John Doe',
@@ -14,7 +17,7 @@ export default function Settings() {
     bio: 'Hey there! I am using this chat app.',
     gmail: 'john.doe@gmail.com'
   });
-  
+
   const [theme, setTheme] = useState('dark');
   const [lastSeenVisible, setLastSeenVisible] = useState(true);
   const [timeFormat, setTimeFormat] = useState('12');
@@ -24,25 +27,25 @@ export default function Settings() {
     newPassword: '',
     confirmPassword: ''
   });
-  
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
-  
+
   const handlePasswordChange = (field, value) => {
     setPasswordData(prev => ({
       ...prev,
       [field]: value
     }));
   };
-  
+
   const handleSaveProfile = () => {
     console.log('Profile saved:', formData);
   };
-  
+
   const handleChangePassword = () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('New passwords do not match!');
@@ -52,14 +55,14 @@ export default function Settings() {
     setShowPasswordModal(false);
     setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
   };
-  
+
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
       console.log('Logging out...');
       navigate('/login');
     }
   };
-  
+
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -85,20 +88,20 @@ export default function Settings() {
         return (
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold">Profile Settings</h2>
-            
+
             {/* Avatar */}
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="relative">
-                <img 
-                  src="../../../image.png" 
+                <img
+                  src="../../../image.png"
                   className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#323232]"
                   alt="Profile"
                 />
                 <label className="absolute bottom-0 right-0 bg-[#248f60] p-1.5 md:p-2 rounded-full cursor-pointer hover:bg-[#1e7a52] transition-colors">
                   <Camera size={14} className="md:w-4 md:h-4" />
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     className="hidden"
                     onChange={handleAvatarChange}
                   />
@@ -109,7 +112,7 @@ export default function Settings() {
                 <p className="text-xs md:text-sm text-zinc-400">Click camera icon to change</p>
               </div>
             </div>
-            
+
             <div className="grid gap-4 md:gap-5">
               {/* Full Name */}
               <div>
@@ -121,7 +124,7 @@ export default function Settings() {
                   className="w-full bg-[#2a2a2a] border border-[#404040] rounded-lg px-3 md:px-4 py-2.5 md:py-3 text-white focus:outline-none focus:border-[#248f60] transition-colors"
                 />
               </div>
-              
+
               {/* Username */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-zinc-300">Username</label>
@@ -132,7 +135,7 @@ export default function Settings() {
                   className="w-full bg-[#2a2a2a] border border-[#404040] rounded-lg px-3 md:px-4 py-2.5 md:py-3 text-white focus:outline-none focus:border-[#248f60] transition-colors"
                 />
               </div>
-              
+
               {/* Bio */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-zinc-300">Bio</label>
@@ -145,7 +148,7 @@ export default function Settings() {
                 />
                 <p className="text-xs text-zinc-500 mt-1">{formData.bio.length}/150 characters</p>
               </div>
-              
+
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-zinc-300 flex items-center gap-2">
@@ -160,7 +163,7 @@ export default function Settings() {
                 />
               </div>
             </div>
-            
+
             <button
               onClick={handleSaveProfile}
               className="w-full sm:w-auto bg-[#248f60] text-white px-6 py-2.5 md:py-3 rounded-lg hover:bg-[#1e7a52] transition-colors font-medium"
@@ -174,7 +177,7 @@ export default function Settings() {
         return (
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold">Appearance</h2>
-            
+
             <div className="space-y-4 md:space-y-6">
               {/* Theme */}
               <div className="bg-[#2a2a2a] rounded-lg p-4 md:p-6">
@@ -194,7 +197,7 @@ export default function Settings() {
                   </select>
                 </div>
               </div>
-              
+
               {/* Time Format */}
               <div className="bg-[#2a2a2a] rounded-lg p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -208,17 +211,15 @@ export default function Settings() {
                   <div className="flex bg-[#323232] rounded-lg p-1">
                     <button
                       onClick={() => setTimeFormat('12')}
-                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded text-sm transition-colors ${
-                        timeFormat === '12' ? 'bg-[#248f60] text-white' : 'text-zinc-300 hover:text-white'
-                      }`}
+                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded text-sm transition-colors ${timeFormat === '12' ? 'bg-[#248f60] text-white' : 'text-zinc-300 hover:text-white'
+                        }`}
                     >
                       12h
                     </button>
                     <button
                       onClick={() => setTimeFormat('24')}
-                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded text-sm transition-colors ${
-                        timeFormat === '24' ? 'bg-[#248f60] text-white' : 'text-zinc-300 hover:text-white'
-                      }`}
+                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded text-sm transition-colors ${timeFormat === '24' ? 'bg-[#248f60] text-white' : 'text-zinc-300 hover:text-white'
+                        }`}
                     >
                       24h
                     </button>
@@ -233,7 +234,7 @@ export default function Settings() {
         return (
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-semibold">Privacy & Security</h2>
-            
+
             <div className="space-y-4 md:space-y-6">
               {/* Last Seen Visibility */}
               <div className="bg-[#2a2a2a] rounded-lg p-4 md:p-6">
@@ -256,7 +257,7 @@ export default function Settings() {
                   </label>
                 </div>
               </div>
-              
+
               {/* Change Password */}
               <div className="bg-[#2a2a2a] rounded-lg p-4 md:p-6">
                 <button
@@ -291,13 +292,13 @@ export default function Settings() {
         return null;
     }
   };
-  
+
   return (
     <div className="h-screen bg-[#1a1a1a] text-white flex flex-col lg:flex-row">
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 border-b border-[#323232] bg-[#242424]">
         <div className="flex items-center gap-3">
-          <button 
+          <button
             className="text-white hover:bg-[#323232] p-2 rounded-full transition-colors"
             onClick={() => navigate(-1)}
           >
@@ -326,7 +327,7 @@ export default function Settings() {
       >
         {/* Sidebar header */}
         <div className="hidden lg:flex items-center gap-4 p-6 border-b border-[#323232]">
-          <button 
+          <button
             className="text-white hover:bg-[#323232] p-2 rounded-full transition-colors"
             onClick={() => navigate(-1)}
           >
@@ -342,11 +343,10 @@ export default function Settings() {
               <li key={tab.id}>
                 <button
                   onClick={() => handleTabChange(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === tab.id 
-                      ? 'bg-[#323232] text-white' 
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === tab.id
+                      ? 'bg-[#323232] text-white'
                       : 'text-zinc-400 hover:text-white hover:bg-[#2a2a2a]'
-                  }`}
+                    }`}
                 >
                   <tab.icon size={20} />
                   <span className="font-medium">{tab.label}</span>
@@ -388,7 +388,7 @@ export default function Settings() {
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2 text-zinc-300">
@@ -402,7 +402,7 @@ export default function Settings() {
                   placeholder="Enter current password"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2 text-zinc-300">
                   New Password
@@ -415,7 +415,7 @@ export default function Settings() {
                   placeholder="Enter new password"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2 text-zinc-300">
                   Confirm New Password
@@ -428,7 +428,7 @@ export default function Settings() {
                   placeholder="Confirm new password"
                 />
               </div>
-              
+
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setShowPasswordModal(false)}

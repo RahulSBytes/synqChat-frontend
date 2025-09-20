@@ -6,6 +6,7 @@ import useMeta from '../../hooks/useMeta.js';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Eye, EyeOff, File, KeyRound, Mail, User } from 'lucide-react';
 import { server } from "../../constants/config.js"
+import toast from 'react-hot-toast';
 
 
 
@@ -15,26 +16,23 @@ function Login() {
 
   const [passSeen, setPassSeen] = useState(false);
   const loginForm = useForm();
-  const user = useAuthStore(state => state.user)
-  const userExists = useAuthStore(state => state.userExists)
+  const login = useAuthStore(state => state.login)
+  const error = useAuthStore(state => state.error)
+
 
   const handleLogin = async (param) => {
-    try {
-      const { data } = await axios.post(`${server}/api/v1/auth/login`, param, {
-        withCredentials: true  // This tells browser to accept cookies if not added cookies won't be added
-      });
-      userExists(data.savedUserData);
+    const success = await login(param);
+    if (success) {
+      toast.success("Successfully logged in");
       navigate("/", { replace: true });
-    } catch (err) {
-      console.log("error sending data from axios :: ", err)
+    } else {
+      toast.error("Failed to login");
     }
-  }
+  };
 
 
   return (
     <section className='w-screen h-screen flex justify-center items-center'>
-
-
       <form
         onSubmit={loginForm.handleSubmit(handleLogin)}
         className="login-form justify-center items-center flex flex-col w-2/3 max-w-[400px] m-auto gap-8 p-8"

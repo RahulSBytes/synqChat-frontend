@@ -11,4 +11,17 @@ function eligibleUserForGroupCreation(contacts, user) {
     );
 }
 
-export { eligibleUserForGroupCreation };
+
+async function apiRequest(promise) {
+  try {
+    const res = await promise;
+    return [res.data, null];
+  } catch (err) {
+    const message = err.response?.data?.message || err.message || "Something went wrong";
+    return [null, message];
+  }
+}
+
+
+
+export { eligibleUserForGroupCreation,apiRequest };

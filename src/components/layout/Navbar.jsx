@@ -4,24 +4,23 @@ import '../../index.css'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { server } from "../../constants/config.js"
+import { useAuthStore } from '../../store/authStore.js';
+import toast from 'react-hot-toast';
 
 
 function Navbar() {
 
+  const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
 
-  async function logoutHandler(){
-      const { data } = await axios.post( 
-    `${server}/api/v1/auth/logout`,
-    {}, 
-    { withCredentials: true }  // axios config 
-  ); 
-
-  navigate('/auth/login')
-
+  async function logoutHandler() {
+    const success = await logout();
+    if (!success) return toast.error("failed logging out")
+    toast.success("logged out successfully")
+    navigate('/auth/login')
   }
 
-  const {isGroupIconClicked, setIsGroupIconClicked, setIsNewGroupClicked, setIsSearchPeopleClicked, setIsNotificationClicked } = useUIStore();
+  const { isGroupIconClicked, setIsGroupIconClicked, setIsNewGroupClicked, setIsSearchPeopleClicked, setIsNotificationClicked } = useUIStore();
 
   return (
     <nav className="hidden md:flex flex-col items-center justify-end  bg-[#3B3B3B] w-16">
@@ -39,7 +38,7 @@ function Navbar() {
       </div>
 
       <div className='flex flex-col justify-center gap-3  h-40 items-center'>
-        <span onClick={()=>navigate('/settings')} className='flex justify-center items-center p-1 rounded-md hover:bg-[#313131] hover:rotate-90 cursor-pointer'><Settings strokeWidth={2} /></span>
+        <span onClick={() => navigate('/settings')} className='flex justify-center items-center p-1 rounded-md hover:bg-[#313131] hover:rotate-90 cursor-pointer'><Settings strokeWidth={2} /></span>
 
         <span className='w-full h-[0.7px] bg-zinc-300' />
         <img src="/image.png" className='h-7 mt-1 rounded-sm w-7 hover:scale-[1.08]' />

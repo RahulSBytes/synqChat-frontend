@@ -32,55 +32,48 @@ const LazyWrapper = ({ children }) => (
 );
 
 
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/">
+      <Route element={<ProtectRoute><AppLayout /></ProtectRoute>}>
+        <Route index element={<Home />} />
+        <Route path="chats/:id" element={<Chats />} />
+      </Route>
+      <Route path="/auth">
+        <Route path="login" element={<Login />} />
+        <Route path="signup" element={<Signup />} />
+      </Route>
+      <Route path="/settings" element={<ProtectRoute><Settings /></ProtectRoute>} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="chats" element={<ChatManagement />} />
+        <Route path="messages" element={<MessagesManagement />} />
+        <Route path="users" element={<UserManagement />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Route>
+  )
+);
+
+
 
 function App() {
-
-  const { loader, userNotExists, userExists } = useAuthStore()
+  const { userNotExists, userExists } = useAuthStore();
 
   useEffect(() => {
-    axios
-      .get(`${server}/api/v1/users/getmyprofile`, {
-        withCredentials: true
-      })
-      .then(({ data }) => {
-        userExists(data.data);
-      })
-      .catch((err) => {
-        console.log("error fetching loggedin user data:", err);
-        userNotExists();
-      })
-  }, [userExists, userNotExists])
-
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route path="/">
-        <Route element={<ProtectRoute><AppLayout /></ProtectRoute>}>
-          <Route index element={<Home />} />
-          <Route path="chats/:id" element={<Chats />} />
-        </Route>
-        <Route path="/auth">
-          <Route path="login" element={<Login />} />
-          <Route path="signup" element={<Signup />} />
-        </Route>
-        <Route path="/settings" element={<ProtectRoute><Settings /></ProtectRoute>} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="chats" element={<ChatManagement />} />
-          <Route path="messages" element={<MessagesManagement />} />
-          <Route path="users" element={<UserManagement />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    )
-  );
+    axios.get(`${server}/api/v1/users/getmyprofile`, { withCredentials: true })
+      .then(({ data }) => userExists(data.data))
+      .catch(() => userNotExists());
+  }, [userExists, userNotExists]);
 
 
 
-  return loader ?
-    <p>loading......</p> :
-    <><RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
       <Toaster position="bottom-center" />
-    </>;
+    </>
+  );
 }
 
 export default App;

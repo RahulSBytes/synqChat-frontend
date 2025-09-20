@@ -1,29 +1,30 @@
 import React, { useEffect, useState } from 'react'
 import { useUIStore } from '../store/store'
 import { X } from 'lucide-react'
-import { userdata } from './constants/userdata.js'
-import axios from 'axios'
-import { server } from '../constants/config.js'
+import { useApiStore } from '../store/apiStore.js'
+import { toast } from 'react-hot-toast'
 
 
 function Notification() {
+
+    const fetchNotifications = useApiStore((state) => state.fetchNotifications)
+    const handleFriendRequest = useApiStore((state) => state.handleFriendRequest)
 
     const setIsNotificationClicked = useUIStore((state) => state.setIsNotificationClicked)
     const [pendingRequests, setPendingRequests] = useState([])
 
     useEffect(() => {
         (async function () {
-            axios.get(`${server}/api/v1/users/notifications`, { withCredentials: true })
-                .then(({ data }) => setPendingRequests(data.data))
-                .catch(err => console.log(err))
+            const notifications = await fetchNotifications()
+            if (!notifications) return toast.error("error fetching toast")
+            setPendingRequests(notifications)
         })()
-
     }, [])
 
-    function handleRequest(requestId, accept) {
-        axios.post(`${server}/api/v1/users/respondfriendrequest`, { requestId, accept }, { withCredentials: true })
-        .then((res) => console.log("responseeeee :: ", res))
-        .catch((error) => console.log("error responding request", error))
+    async function handleRequest(requestId, accept) {
+        const success = await handleFriendRequest(requestId, accept)
+        if (!success) return toast.error("failed responding request")
+        toast.success("friend request responded")
     }
 
     return (
@@ -32,9 +33,9 @@ function Notification() {
 
                 <X onClick={setIsNotificationClicked} className="absolute top-6 right-6 text-gray-500 hover:text-gray-700" size={20} strokeWidth={3} color="#c1c1c1" />
                 <h2 className="text-xl font-semibold mb-6 text-center"> Notifications</h2>
-               {pendingRequests.length > 0 ? <div className="flex flex-col gap-3 pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
+                {pendingRequests.length > 0 ? <div className="flex flex-col gap-3 pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
                     {
-                         pendingRequests.map(({ sender, _id }) =>
+                        pendingRequests.map(({ sender, _id }) =>
                             <div key={_id} className="flex justify-between items-center pr-4">
                                 <div className="flex gap-2 w-full">
                                     <img src={sender.avatar.url || '/image.png'} className="h-8 w-8 rounded-full border-[2px] border-[#248F60]" />
@@ -49,9 +50,9 @@ function Notification() {
                             </div>
                         )
                     }
-                </div> 
-                : 
-                <div className='text-center text-zinc-300'> no notification</div>
+                </div>
+                    :
+                    <div className='text-center text-zinc-300'> no notification</div>
                 }
 
             </div>

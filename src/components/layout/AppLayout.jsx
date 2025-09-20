@@ -6,10 +6,13 @@ import CreateGroupForm from "../CreateGroupForm.jsx";
 import FindDialog from "../FindDialog.jsx";
 import Notification from "../Notification.jsx";
 import { Outlet } from "react-router-dom";
+import { useChatStore } from "../../store/chatStore.js";
 
 export default function AppLayout() {
 
     const { isNewGroupClicked, isSearchPeopleClicked, isNotificationClicked } = useUIStore();
+        const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
+    
 
     return (
       <div className="h-screen flex overflow-hidden">
@@ -34,9 +37,9 @@ export default function AppLayout() {
         </div>
 
         {/* Profile Details */}
-        <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px] h-full">
+     {currentSelectedChatId  && <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px] h-full">
           <Profile />
-        </div>
+        </div>}
       </div>
     );
   };

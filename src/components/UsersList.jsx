@@ -1,34 +1,30 @@
 import { Search } from 'lucide-react'
-import { userdata } from './constants/userdata'
 import Groupprof from './layout/Groupprof'
 import { useUIStore } from '../store/store.js'
 import { useNavigate } from 'react-router-dom'
-import { server } from '../constants/config.js'
-import axios from 'axios'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { useChatStore } from '../store/chatStore.js'
 import { useAuthStore } from '../store/authStore.js'
+import { useApiStore } from '../store/apiStore.js';
 
 
 function UsersList() {
 
   const [search, setSearch] = useState('')
-  const setContacts = useChatStore(state => state.setContacts)
-  const contacts = useChatStore(state => state.contacts)
-  const user = useAuthStore(state => state.user)
 
+  const user = useAuthStore(state => state.user)
+  const contacts = useApiStore((state)=>state.contacts)
+  const fetchContact = useApiStore((state)=>state.fetchContact)
 
   useEffect(() => {
-    (async function() {
-      axios.get(`${server}/api/v1/chats`, { withCredentials: true })
-        .then(({ data }) => setContacts(data.chats))
-        .catch(err => console.log(err))
-    })()
+      (
+        async function () {
+          const success = await fetchContact();
+          if (!success) toast.error("error fetching contact")
+        }
+      )()
 
   }, [])
-
-
 
   function handleSearch(string) {
     setSearch(string);

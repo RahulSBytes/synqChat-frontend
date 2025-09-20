@@ -2,16 +2,16 @@
 import { ArrowUpRight, Clapperboard, Dot, FileAudio, FileMinus, Image } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore.js';
 import { useChatStore } from '../../store/chatStore.js';
-import moment from "moment";
 import { useMemo, useState } from 'react'
 import ShowProfileAttachmentList from '../minicomponents/ShowProfileAttachmentList.jsx';
+import { useApiStore } from '../../store/apiStore.js';
 
 function Details() {
 
     const user = useAuthStore((state) => state.user);
-    const contacts = useChatStore((state) => state.contacts)
     const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
-    const messagesRelatedToChat = useChatStore((state) => state.messagesRelatedToChat)
+    const contacts = useApiStore((state) => state.contacts)
+    const messagesRelatedToChat = useApiStore((state) => state.messagesRelatedToChat)
 
     if (!user) return <p>loading.......!</p>
 
@@ -41,7 +41,7 @@ function Details() {
     const [expandedFileTypes, setExpandedFileTypes] = useState({});
 
     if (!contacts || !currentSelectedChatId) {
-        return <p>No chat selected or contacts not loaded</p>
+        return null
     }
 
     const selectedChatInfo = contacts.find((el) => el._id === currentSelectedChatId)
@@ -106,7 +106,7 @@ function Details() {
                         {/* Profile Section - Fixed height */}
                         <div className='w-full flex flex-col items-center flex-shrink-0'>
                             <img
-                                className="h-16 w-16 rounded-full"
+                                className="h-16 w-16 rounded-full object-cover border border-[#323232]"
                                 src={selectedChatInfo.avatar?.url || '../../../public/image.png'}
                                 alt="Group avatar"
                             />
@@ -121,7 +121,7 @@ function Details() {
                         <div className=' w-full flex flex-col items-center py-4 gap-1 flex-shrink-0'>
                             <img
                                 src={info.avatar?.url || '../../../public/image.png'}
-                                className='h-14 w-14 rounded-full object-cover'
+                                className='h-14 w-14 rounded-full object-cover border border-[#323232]'
                                 alt={`${info.fullName} avatar`}
                             />
                             <h4 className='font-semibold text-lg'>{info.fullName}</h4>

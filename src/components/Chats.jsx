@@ -5,16 +5,15 @@ import { useUIStore } from '../store/store';
 import { useChatStore } from '../store/chatStore.js';
 import moment from 'moment'
 import { useAuthStore } from '../store/authStore.js';
-import { useForm } from 'react-hook-form';
-import axios from 'axios';
-import { server } from '../constants/config.js';
 import AttachmentGrid from './minicomponents/AttachmentGrid.jsx';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+
+import { useApiStore } from '../store/apiStore.js';
 
 function Chats() {
 
   const setIsNewGroupClicked = useUIStore((state) => state.setIsNewGroupClicked)
+
 
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
@@ -24,17 +23,17 @@ function Chats() {
 
 
   const user = useAuthStore((state) => state.user)
-  const userExists = useAuthStore((state) => state.userExists)
+  const fetchMessages = useApiStore((state) => state.fetchMessages)
+  const sendMessage = useApiStore((state) => state.sendMessage)
+  const messagesRelatedToChat = useApiStore((state) => state.messagesRelatedToChat)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
-  const messagesRelatedToChat = useChatStore((state) => state.messagesRelatedToChat)
-  const setMessagesRelatedToChat = useChatStore((state) => state.setMessagesRelatedToChat)
-
-
 
   useEffect(() => {
-    axios.get(`${server}/api/v1/chats/getmsgs/${currentSelectedChatId}`, { withCredentials: true })
-      .then(({ data }) => setMessagesRelatedToChat(data.chat))
-      .catch(err => console.log(err))
+    (async function () {
+      const success = await fetchMessages(currentSelectedChatId)
+      if (!success) toast.error("failed fetching messages")
+    }
+    )()
   }, [currentSelectedChatId])
 
 
@@ -110,19 +109,10 @@ function Chats() {
       });
     }
 
-    try {
-      const res = await axios.post(
-        `${server}/api/v1/chats/sendMessage/${currentSelectedChatId}`,
-        formData,
-        { withCredentials: true }
-      );
-
+      const success = await sendMessage(formData, currentSelectedChatId);
+      if (!success) return toast.error("error sending message")
       setMsg('');
       setSelectedFiles([]);
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
   };
 
   // Remove single file
@@ -140,7 +130,7 @@ function Chats() {
     e.target.style.height = Math.min(e.target.scrollHeight, 90) + 'px';
   };
 
-  const contacts = useChatStore((state) => state.contacts)
+  const contacts = useApiStore((state) => state.contacts)
   const chatInfo = contacts?.find((el) => el._id == currentSelectedChatId)
 
   if (!chatInfo || !user) {
@@ -150,16 +140,6 @@ function Chats() {
   const name = chatInfo.groupChat ? chatInfo.name : chatInfo.members.find((el) => el._id != user._id)?.fullName;
   let avatar = '';
   if (!chatInfo.groupChat) avatar = chatInfo.members.find((el) => el._id != user._id).avatar.url;
-
-
-
-  // function handleTimeSection(createdAt) {
-  //   if (moment(createdAt).format('YYYY-MM-DD') !== timeSection) {
-  //     console.log("the time was not equal on ::", timeSection)
-  //     setTimeSection(moment(createdAt).format('YYYY-MM-DD'))
-  //     return <span>{timeSection}</span>
-  //   }
-  // }
 
 
   return (
@@ -272,8 +252,8 @@ function Chats() {
                         {text.length > 0 && (
                           <div
                             className={`max-w-[70%] py-2 px-3 rounded-t-md ${sender === user._id
-                                ? ' bg-[#353535] rounded-l-lg '
-                                : 'bg-[#689969] rounded-r-lg'
+                              ? ' bg-[#353535] rounded-l-lg '
+                              : 'bg-[#689969] rounded-r-lg'
                               }`}
                           >
                             <span className="whitespace-pre-wrap break-words">{text}</span>
