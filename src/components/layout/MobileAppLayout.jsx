@@ -9,13 +9,13 @@ import { Outlet } from "react-router-dom";
 import { useChatStore } from "../../store/chatStore.js";
 import { useState } from "react";
 import useSocketEvents from "../../hooks/useSocketEvents.js";
-import { Socket } from "socket.io-client";
 import { getSocket } from "../../context/SocketContext.jsx";
 import { ONLINE_USERS } from "../../constants/events.js";
 import { useAuthStore } from "../../store/authStore.js";
+import MobileNavbar from "./MobileNavbar.jsx";
 // import { set } from "mongoose";
 
-export default function AppLayout() {
+export default function MobileAppLayout() {
 
   const user = useAuthStore((state) => state.user)
   const { isNewGroupClicked, isSearchPeopleClicked, isNotificationClicked } = useUIStore();
@@ -35,14 +35,6 @@ export default function AppLayout() {
 
 
   return (<div>
-
-    {/* mobile layout */}
-    <div>
-
-    </div>
-
-    {/* desktop layout layout */}
-
     <div className="h-screen flex overflow-hidden border border-violet-600">
       {
         isNewGroupClicked && <CreateGroupForm />
@@ -54,21 +46,10 @@ export default function AppLayout() {
         isNotificationClicked && <Notification />
       }
 
-      <Navbar />
-      {/* User List */}
-      <div className="hidden md:flex w-[300px] bg-[#353535] h-full">
-        <UsersList onlineUsers={onlineUsers} />
-      </div>
-
-      {/* Chat Section */}
+      <MobileNavbar />
       <div className="flex-1 min-w-0 bg-[#212121] h-full">
         <Outlet context={{ onlineUsers }} />
       </div>
-
-      {/* Profile Details */}
-      {currentSelectedChatId && <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px] h-full">
-        <Profile />
-      </div>}
     </div>
   </div>
   );

@@ -4,9 +4,9 @@ import { useAuthStore } from "../../store/authStore.js";
 import moment from "moment";
 import { useChatStore } from "../../store/chatStore.js";
 
-function Groupprof({ data }) {
+function Groupprof({ data, onlineUsers = [] }) {
 
-    const { user } = useAuthStore((state) => state.user);
+    const user = useAuthStore((state) => state.user);
     const noOfUnseenMsg = 9;
     const navigate = useNavigate();
 
@@ -18,13 +18,14 @@ function Groupprof({ data }) {
         navigate(`/chats/${chatId}`)
     }
 
-    const otherUser = data?.members?.find((el) => el._id !== user?._id)
+    let otherUser;
+    if (!data.groupChat) otherUser = data.members.find((el) => el._id != user._id);
 
     if (!data) {
         return <div>Loading chat...</div>
     }
 
-   
+
 
     return (
         <div onClick={() => contactClickHandler(data._id)} className={`flex gap-2 items-center p-2 pl-2 justify-between hover:bg-[#323232] cursor-pointer ${currentSelectedChatId === data._id ? 'bg-[#323232]' : ''}`}>
@@ -32,7 +33,7 @@ function Groupprof({ data }) {
                 <div className='relative'>
                     <img src={data.groupChat ? data.avatar.url || '../../../image.png' : otherUser.avatar.url}
                         className="border border-[#414141] w-8 h-8  rounded-full object-cover" />
-                    {!data.groupChat && <Dot className='absolute right-4 bottom-3' size={30} strokeWidth={3} color='#5dbb63' />}
+                    {!data.groupChat && onlineUsers.includes(otherUser._id) && <Dot className='absolute right-4 bottom-3' size={30} strokeWidth={3} color='#5dbb63' />}
                 </div>
 
                 <div className="flex-1 items-center">

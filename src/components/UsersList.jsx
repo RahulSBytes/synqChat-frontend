@@ -1,14 +1,14 @@
 import { Search } from 'lucide-react'
 import Groupprof from './layout/Groupprof'
 import { useUIStore } from '../store/store.js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore.js'
 import { useApiStore } from '../store/apiStore.js';
 
 
-function UsersList() {
+function UsersList({onlineUsers}) {
 
   const [search, setSearch] = useState('')
 
@@ -74,6 +74,7 @@ function UsersList() {
               <Groupprof
                 key={chat._id}
                 data={chat}
+                onlineUsers={onlineUsers}
               />
             ))
         }

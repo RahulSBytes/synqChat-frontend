@@ -8,6 +8,11 @@ export const useChatStore = create(
     (set, get) => ({
       notificationCount: 0,
 
+      // onlineUsers : [],
+      // setOnlineUsersId : (IdArr)=>{
+      //   set({onlineUsers :})
+      // },
+
       currentSelectedChatId: null,
       setCurrentSelectedChatId: (chatId) =>
         set({ currentSelectedChatId: chatId }),

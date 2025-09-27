@@ -7,10 +7,16 @@ import moment from 'moment'
 import { useAuthStore } from '../store/authStore.js';
 import AttachmentGrid from './minicomponents/AttachmentGrid.jsx';
 import toast from 'react-hot-toast';
-
+import TypingIndicator from './minicomponents/TypingIndicator.jsx'
 import { useApiStore } from '../store/apiStore.js';
+import { getSocket } from '../context/SocketContext.jsx';
+import { NEW_MESSAGE, ONLINE_USERS, START_TYPING, STOP_TYPING } from '../constants/events.js';
+import useSocketEvents from '../hooks/useSocketEvents.js';
+import { useOutletContext } from 'react-router-dom';
+import { useTypingIndicator } from '../hooks/useTypingIndicator.js';
 
 function Chats() {
+  const { onlineUsers } = useOutletContext()
 
   const setIsNewGroupClicked = useUIStore((state) => state.setIsNewGroupClicked)
 
@@ -23,10 +29,9 @@ function Chats() {
 
 
   const user = useAuthStore((state) => state.user)
-  const fetchMessages = useApiStore((state) => state.fetchMessages)
-  const sendMessage = useApiStore((state) => state.sendMessage)
-  const messagesRelatedToChat = useApiStore((state) => state.messagesRelatedToChat)
+  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat } = useApiStore()
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
+
 
   useEffect(() => {
     (async function () {
@@ -92,6 +97,11 @@ function Chats() {
   };
 
 
+  // ----------------
+  const socket = getSocket()
+
+  // -----------
+
   async function handleSendMsg() {
     const { text, attachment } = { text: msg, attachment: selectedFiles };
 
@@ -109,11 +119,16 @@ function Chats() {
       });
     }
 
-      const success = await sendMessage(formData, currentSelectedChatId);
-      if (!success) return toast.error("error sending message")
-      setMsg('');
-      setSelectedFiles([]);
+    const success = await sendMessage(formData, currentSelectedChatId);
+    if (!success) return toast.error("error sending message")
+
+
+    setMsg('');
+    setSelectedFiles([]);
   };
+
+
+
 
   // Remove single file
   const removeSelectedFile = (index) => {
@@ -133,20 +148,59 @@ function Chats() {
   const contacts = useApiStore((state) => state.contacts)
   const chatInfo = contacts?.find((el) => el._id == currentSelectedChatId)
 
+
   if (!chatInfo || !user) {
     return <div>Loading...</div>
   }
 
-  const name = chatInfo.groupChat ? chatInfo.name : chatInfo.members.find((el) => el._id != user._id)?.fullName;
-  let avatar = '';
-  if (!chatInfo.groupChat) avatar = chatInfo.members.find((el) => el._id != user._id).avatar.url;
+  let { _id: otherUserId, fullName, avatar } = chatInfo.members.find((el) => el._id != user._id)
+  if (chatInfo.groupChat) fullName = chatInfo.name
+  // ---------soket listeners
+
+  const [typingUsers, setTypingUsers] = useState(new Map());
+
+  const { startTyping, stopTyping } = useTypingIndicator(
+    chatInfo._id,
+    chatInfo.members
+  );
+
+
+  useSocketEvents(socket, {
+    // socket listeners listing
+    [NEW_MESSAGE]: (data) => {
+      if (data.chat === currentSelectedChatId) { addMessageFromSocket(data); }
+    },
+
+    [START_TYPING]: ({ chatId: typingChatId, userId, username }) => {
+      if (typingChatId === currentSelectedChatId && userId !== user._id) {
+        setTypingUsers(prev => new Map(prev).set(userId, username));
+      }
+    },
+
+    [STOP_TYPING]: ({ chatId: typingChatId, userId }) => {
+      if (typingChatId === currentSelectedChatId) {
+        setTypingUsers(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(userId);
+          return newMap;
+        });
+      }
+    },
+  });
+
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setMsg(value);
+    value.length > 0 ? startTyping() : stopTyping();
+  }
 
 
   return (
     <div className='flex-1 min-w-0 h-full flex flex-col relative'>
       {/* STICKY HEADER */}
       <div className='sticky bg-[#242424] top-0 z-10 flex justify-between items-center p-3 px-8 border-b border-gray-700'>
-        <div className='flex items-center w-full'>
+        <div className='flex items-center w-full border border-yellow-400'>
           {chatInfo.groupChat ?
             <div className="mr-2 flex-col p-2 w-8 h-8 gap-1 flex bg-zinc-500 rounded-full justify-center items-center">
               <div className="flex gap-1">
@@ -158,16 +212,28 @@ function Chats() {
                 <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
               </div>
             </div> :
-            <img src={avatar} className='h-10 w-10 rounded-full mr-2 border-2 border-zinc-600' />
+            <img src={avatar.url} className='h-10 w-10 rounded-full mr-2 border-2 border-zinc-600' />
           }
 
           <div className='flex flex-col'>
-            <span className='font-semibold'>{name}</span>
-            <span className='text-xs font-medium text-[#248f60]'>Online</span>
+            <span className='font-semibold'>{fullName}</span>
+            {!chatInfo.groupChat && <span className='text-xs font-medium text-[#248f60]'>{onlineUsers.includes(otherUserId) ? "Online" : "Offline"}</span>}
           </div>
-          <div className="drawer-content ml-auto md:hidden">
+          <div className="drawer-content ml-auto ">
             <label htmlFor="my-drawer-4" className="drawer-button">
-              <Menu />
+              <Menu  className='border border-green-600'/>
+              {/* gggggggggg */}
+              <div className="dropdown dropdown-end">
+                <div tabIndex={0} role="button" className="btn btn-ghost rounded-field border border-red-600">Dropdown</div>
+                <ul
+                  tabIndex={0}
+                  className="menu dropdown-content bg-base-200 rounded-box z-1 mt-4 w-52 p-2 shadow-sm">
+                  <li><a>Item 1</a></li>
+                  <li><a>Item 2</a></li>
+                </ul>
+              </div>
+              {/* gggggggggg */}
+
             </label>
           </div>
         </div>
@@ -231,8 +297,8 @@ function Chats() {
                       </div>
                     )}
 
-                    <div className={`chat ${sender === user._id ? 'chat-end' : 'chat-start'}`}>
-                      {sender !== user._id && (
+                    <div className={`chat ${sender._id === user._id ? 'chat-end' : 'chat-start'}`}>
+                      {sender._id !== user._id && (
                         <div className="chat-image avatar">
                           <div className="w-8 rounded-full">
                             <img src="/image.png" alt="User avatar" />
@@ -240,7 +306,7 @@ function Chats() {
                         </div>
                       )}
                       <div
-                        className={`w-full rounded-t-lg flex gap-1 flex-col ${sender === user._id ? 'items-end' : 'items-start'
+                        className={`w-full rounded-t-lg flex gap-1 flex-col ${sender._id === user._id ? 'items-end' : 'items-start'
                           }`}
                       >
                         {attachments.length > 0 && (
@@ -251,7 +317,7 @@ function Chats() {
                         )}
                         {text.length > 0 && (
                           <div
-                            className={`max-w-[70%] py-2 px-3 rounded-t-md ${sender === user._id
+                            className={`max-w-[70%] py-2 px-3 rounded-t-md ${sender._id === user._id
                               ? ' bg-[#353535] rounded-l-lg '
                               : 'bg-[#689969] rounded-r-lg'
                               }`}
@@ -270,6 +336,7 @@ function Chats() {
               })}
               {/* Scroll anchor */}
               <div ref={messagesEndRef} />
+
             </div>
           </>
         ) : (
@@ -277,8 +344,13 @@ function Chats() {
             <p className="text-gray-500">No messages yet</p>
           </div>
         )}
-      </div>
 
+        {typingUsers.has(otherUserId) &&
+          <div className="relative left-4 bottom-3 flex items-center  w-full text-[#919191]">
+            <span className='m-0 p-0'>Typing</span>
+            <TypingIndicator />
+          </div>}
+      </div>
       {/* STICKY INPUT SECTION */}
       <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700'>
         {isEmojiOpen && (
@@ -386,7 +458,7 @@ function Chats() {
               <textarea
                 onInput={autoResize}
                 value={msg}
-                onChange={(e) => setMsg(e.target.value)}
+                onChange={handleInputChange}
                 className="w-full resize-none rounded-3xl px-4 outline-none min-h-[35px] max-h-[112px] py-2 overflow-y-auto scrollbar-thin scrollbar-track-transparent bg-[#353535] text-white"
                 placeholder={selectedFiles.length > 0 ? `Send ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} with message...` : "Type a message..."}
                 rows={1}
@@ -407,4 +479,4 @@ function Chats() {
   )
 }
 
-export default Chats
+export default Chats;

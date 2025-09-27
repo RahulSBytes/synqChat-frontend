@@ -3,9 +3,10 @@ import axios from "axios";
 import { server } from "../constants/config.js";
 import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
+import { useEffect } from "react";
 
 export const useApiStore = create(
-  persist((set) => ({
+  persist((set, get) => ({
     messagesRelatedToChat: [],
 
     fetchMessages: async (currentSelectedChatId) => {
@@ -19,6 +20,12 @@ export const useApiStore = create(
 
       set({ messagesRelatedToChat: data.chat });
       return true;
+    },
+
+    addMessageFromSocket: (newMessage) => {
+      const { messagesRelatedToChat } = get();
+      if (messagesRelatedToChat.some((m) => m._id === newMessage._id)) return;
+      set({ messagesRelatedToChat: [...messagesRelatedToChat, newMessage] });
     },
 
     contacts: [],
@@ -42,9 +49,7 @@ export const useApiStore = create(
           { withCredentials: true }
         )
       );
-
-      if (error) return false;
-      return true;
+      return error ? false : true;
     },
 
     createGroup: async (formData) => {

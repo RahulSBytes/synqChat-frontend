@@ -9,6 +9,9 @@ import axios from "axios";
 import { useAuthStore } from "./store/authStore.js";
 import AppLayout from "./components/layout/AppLayout.jsx";
 import AdminLayout from "./components/admin/AdminLayout.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
+import UsersList from "./components/UsersList.jsx";
+import MobileAppLayout from "./components/layout/MobileAppLayout.jsx";
 
 // Lazy-loaded pages
 // const Group = lazy(() => import("./components/Group"));
@@ -21,6 +24,8 @@ const UserManagement = lazy(() => import("./components/admin/UserManagement"));
 const ChatManagement = lazy(() => import("./components/admin/ChatManagement"));
 const MessagesManagement = lazy(() => import("./components/admin/MessagesManagement"));
 const Settings = lazy(() => import("./components/layout/Settings.jsx"));
+const Profile = lazy(() => import("./components/layout/Profile.jsx"));
+
 
 
 
@@ -30,6 +35,18 @@ const LazyWrapper = ({ children }) => (
     {children}
   </Suspense>
 );
+
+
+const screenWidth = window.innerWidth;
+
+console.log("screen width ::",screenWidth);
+
+{/* <Route element={<ProtectRoute><MobileAppLayout /></ProtectRoute>}>
+  <Route index element={<UsersList />} />
+  <Route path="chats/:id" element={<Chats />} />
+  <Route path="/profile" element={<Profile/>}/>
+</Route> */}
+
 
 
 const router = createBrowserRouter(
@@ -69,10 +86,10 @@ function App() {
 
 
   return (
-    <>
+    <SocketProvider>
       <RouterProvider router={router} />
       <Toaster position="bottom-center" />
-    </>
+    </SocketProvider>
   );
 }
 
