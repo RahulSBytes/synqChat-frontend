@@ -41,6 +41,38 @@ export const useApiStore = create(
       return true;
     },
 
+    updateChat: (updatedChat) => {
+      set((state) => ({
+        contacts: state.contacts.map((chat) =>
+          chat._id === updatedChat._id ? { ...chat, ...updatedChat } : chat
+        ),
+      }));
+    },
+
+    removeMemberFromGroup: async (chatId, memberId) => {
+      const [data, error] = await apiRequest(
+        axios.patch(
+          `${server}/api/v1/chats/removemember`,
+          { chatId, memberId },
+          { withCredentials: true }
+        )
+      );
+
+      return error ? false : true;
+    },
+
+    addMemberInGroup: async (chatId, username) => {
+      const [data, error] = await apiRequest(
+        axios.patch(
+          `${server}/api/v1/chats/addmember`,
+          { chatId, username },
+          { withCredentials: true }
+        )
+      );
+// console.log(error)
+      return error ? false : true;
+    },
+
     sendMessage: async (formData, currentSelectedChatId) => {
       const [data, error] = await apiRequest(
         axios.post(

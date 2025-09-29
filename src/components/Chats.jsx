@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EmojiPicker from 'emoji-picker-react';
-import { Clapperboard, FileAudio, FileAudio2, FilePlay, FileText, Image, Menu, Paperclip, Send, SmilePlus, Video, X } from 'lucide-react'
+import { ArrowLeft, Clapperboard, Eclipse, Ellipsis, FileAudio, FileAudio2, FilePlay, FileText, Image, Menu, Paperclip, Send, SmilePlus, Video, X } from 'lucide-react'
 import { useUIStore } from '../store/store';
 import { useChatStore } from '../store/chatStore.js';
 import moment from 'moment'
@@ -12,17 +12,38 @@ import { useApiStore } from '../store/apiStore.js';
 import { getSocket } from '../context/SocketContext.jsx';
 import { NEW_MESSAGE, ONLINE_USERS, START_TYPING, STOP_TYPING } from '../constants/events.js';
 import useSocketEvents from '../hooks/useSocketEvents.js';
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useTypingIndicator } from '../hooks/useTypingIndicator.js';
+import Profile from "./layout/Profile.jsx"
 
 function Chats() {
   const { onlineUsers } = useOutletContext()
 
-  const setIsNewGroupClicked = useUIStore((state) => state.setIsNewGroupClicked)
-
-
+  const [sending, setSending] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+
+  const emojiRef = useRef(null);
+  const attachmentRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      // Close emoji
+      if (isEmojiOpen && emojiRef.current && !emojiRef.current.contains(e.target)) {
+        setIsEmojiOpen(false);
+      }
+      // Close attachment
+      if (isAttachmentOpen && attachmentRef.current && !attachmentRef.current.contains(e.target)) {
+        setIsAttachmentOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEmojiOpen, isAttachmentOpen]);
+
 
   const [msg, setMsg] = useState('');
   const messagesEndRef = useRef(null);
@@ -107,8 +128,12 @@ function Chats() {
 
     if (!text.trim() && (!attachment || attachment.length === 0)) {
       toast.error("Something is missing");
-      return
-    };
+      return;
+    }
+
+    // Immediately switch UI into "sending state"
+    setSending(true);
+    setSelectedFiles([]); // clear from visible UI
 
     const formData = new FormData();
     formData.append('text', text);
@@ -120,12 +145,17 @@ function Chats() {
     }
 
     const success = await sendMessage(formData, currentSelectedChatId);
-    if (!success) return toast.error("error sending message")
 
+    if (!success) {
+      toast.error("error sending message");
+      // restore original files if sending fails
+      setSelectedFiles(attachment);
+    } else {
+      setMsg('');
+    }
 
-    setMsg('');
-    setSelectedFiles([]);
-  };
+    setSending(false);
+  }
 
 
 
@@ -195,12 +225,19 @@ function Chats() {
     value.length > 0 ? startTyping() : stopTyping();
   }
 
+  const navigate = useNavigate();
 
   return (
-    <div className='flex-1 min-w-0 h-full flex flex-col relative'>
+    <div className="flex-1 min-w-0 h-full flex flex-col relative">
       {/* STICKY HEADER */}
-      <div className='sticky bg-[#242424] top-0 z-10 flex justify-between items-center p-3 px-8 border-b border-gray-700'>
-        <div className='flex items-center w-full border border-yellow-400'>
+      <div className='sticky bg-[#242424] top-0 z-10 flex justify-between items-center p-3 border-b border-gray-700'>
+        <div className='flex items-center w-full '>
+          <button
+            onClick={() => navigate('/')}
+            className="mr-2 text-white hover:bg-gray-700 rounded md:hidden"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           {chatInfo.groupChat ?
             <div className="mr-2 flex-col p-2 w-8 h-8 gap-1 flex bg-zinc-500 rounded-full justify-center items-center">
               <div className="flex gap-1">
@@ -219,54 +256,33 @@ function Chats() {
             <span className='font-semibold'>{fullName}</span>
             {!chatInfo.groupChat && <span className='text-xs font-medium text-[#248f60]'>{onlineUsers.includes(otherUserId) ? "Online" : "Offline"}</span>}
           </div>
-          <div className="drawer-content ml-auto ">
-            <label htmlFor="my-drawer-4" className="drawer-button">
-              <Menu  className='border border-green-600'/>
-              {/* gggggggggg */}
-              <div className="dropdown dropdown-end">
-                <div tabIndex={0} role="button" className="btn btn-ghost rounded-field border border-red-600">Dropdown</div>
-                <ul
-                  tabIndex={0}
-                  className="menu dropdown-content bg-base-200 rounded-box z-1 mt-4 w-52 p-2 shadow-sm">
-                  <li><a>Item 1</a></li>
-                  <li><a>Item 2</a></li>
+        </div>
+
+
+        <div className='md:hidden'>
+          <label htmlFor="my-drawer-4" className="drawer-button md:hidden">
+            <Ellipsis />
+          </label>
+          <div className="drawer-content ml-auto  md:hidden">
+            <div className="drawer drawer-end flex justify-end w-6">
+              <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
+              {/* side bar code for mobile layout */}
+              <div className="drawer-side">
+                <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
+                <ul className="menu bg-[#313131] text-base-content h-full py-4 w-full">
+
+                  <label htmlFor="my-drawer-4" className="drawer-button self-end  mt-6 mx-4">
+                    <X strokeWidth={2} />
+                  </label>
+                  <Profile mobileStyle={'h-full w-full'} />
+
                 </ul>
               </div>
-              {/* gggggggggg */}
-
-            </label>
+            </div>
           </div>
         </div>
 
-        <div className="drawer drawer-end flex justify-end w-6 md:hidden">
-          <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-          {/* side bar code for mobile layout */}
-          <div className="drawer-side">
-            <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-            <ul className="menu bg-[#313131] text-base-content min-h-full w-80 p-4 px-8">
-              <div className="flex flex-col">
-                <label htmlFor="my-drawer-4" className="drawer-button self-end mb-6 p-2">
-                  <X strokeWidth={2} />
-                </label>
-                <div className="mb-8">
-                  <div className=' w-full flex flex-col items-center gap-1'>
-                    <img src="/image.png" className='h-16 rounded-full border-[1px] border-zinc-400' />
-                    <h4 className='font-semibold text-lg'>Jhon Doe</h4>
-                    <p className='text-center text-sm'>example@gmail.com</p>
-                    <p className='px-4 text-center text-zinc-300 text-xs'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed, incidunt!</p>
-                  </div>
-                </div>
-                <li className="py-2 w-full pl-3 hover:bg-[#414141]" >Profile</li>
-                <li className="py-2 w-full pl-3 hover:bg-[#414141]">Find People</li>
-                <li onClick={setIsNewGroupClicked} className="cursor-pointer py-2 w-full pl-3 hover:bg-[#414141]">Create New Group</li>
-                <li className="py-2 w-full pl-3 hover:bg-[#414141]">Notification</li>
-                <li className="py-2 w-full pl-3 hover:bg-[#414141]">Logout</li>
-                <li className="py-2 w-full pl-3 hover:bg-[#414141]">Setting</li>
-                <li className="py-2 w-full pl-3 hover:bg-[#414141]">Switch To Admin</li>
-              </div>
-            </ul>
-          </div>
-        </div>
+        {/* ------------- */}
       </div>
 
       {/* MESSAGES SECTION - SCROLLABLE WITH BOTTOM-TO-TOP FLOW */}
@@ -354,7 +370,7 @@ function Chats() {
       {/* STICKY INPUT SECTION */}
       <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700'>
         {isEmojiOpen && (
-          <div className="absolute bottom-full left-0 w-full z-20">
+          <div ref={emojiRef} className="absolute bottom-full left-0 w-full z-20">
             <EmojiPicker
               onEmojiClick={onEmojiSelect}
               height={200}
@@ -370,7 +386,7 @@ function Chats() {
         <form className='flex items-center relative'>
           <div className='p-2 rounded-full hover:bg-[#313131] cursor-pointer relative'>
             {isAttachmentOpen && (
-              <div className="absolute flex flex-col items-start bottom-12 left-0 bg-[#272727] p-2 gap-1 rounded-lg shadow-lg z-10 w-max">
+              <div ref={attachmentRef} className="absolute flex flex-col items-start bottom-12 left-0 bg-[#272727] p-2 gap-1 rounded-lg shadow-lg z-10 w-max">
                 <span
                   onClick={() => handleFileSelect('image/*')}
                   className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer whitespace-nowrap'
@@ -451,6 +467,12 @@ function Chats() {
                   ))}
                 </div>
 
+              </div>
+            )}
+
+            {sending && (
+              <div className="w-full mb-2 p-2 bg-[#343434] rounded-lg flex items-center justify-center text-gray-300">
+                <span className="text-sm animate-pulse">Sending attachments...</span>
               </div>
             )}
 

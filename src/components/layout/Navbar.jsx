@@ -24,7 +24,7 @@ function Navbar() {
 
   return (
     <nav className="hidden md:flex flex-col items-center justify-end  bg-[#3B3B3B] w-16">
-      <div className='flex flex-col flex-1 justify-center gap-8'>
+      <div className='flex flex-col flex-1 justify-center gap-[4vh]'>
         <span onClick={setIsSearchPeopleClicked} data-tip="find user" className='tooltip-sm tooltip tooltip-right flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><UserRoundSearch size={22} strokeWidth={2.5} /></span>
 
         <span onClick={setIsNewGroupClicked} data-tip="new group" className='tooltip-sm tooltip tooltip-right flex justify-center items-center p-2 rounded-md hover:bg-[#313131] cursor-pointer'><Plus size={22} strokeWidth={2.5} /></span>

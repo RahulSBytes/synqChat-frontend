@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Home from "./components/Home";
 import ProtectRoute from "./components/auth/protectRoute.jsx";
 import Chats from "./components/Chats";
@@ -12,6 +12,7 @@ import AdminLayout from "./components/admin/AdminLayout.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 import UsersList from "./components/UsersList.jsx";
 import MobileAppLayout from "./components/layout/MobileAppLayout.jsx";
+import ResponsiveLayout from "./components/layout/ResponsiveLayout.jsx";
 
 // Lazy-loaded pages
 // const Group = lazy(() => import("./components/Group"));
@@ -37,36 +38,32 @@ const LazyWrapper = ({ children }) => (
 );
 
 
-const screenWidth = window.innerWidth;
-
-console.log("screen width ::",screenWidth);
-
-{/* <Route element={<ProtectRoute><MobileAppLayout /></ProtectRoute>}>
-  <Route index element={<UsersList />} />
-  <Route path="chats/:id" element={<Chats />} />
-  <Route path="/profile" element={<Profile/>}/>
-</Route> */}
-
-
-
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
-      <Route element={<ProtectRoute><AppLayout /></ProtectRoute>}>
+      {/* Main app routes with responsive layout */}
+      <Route element={<ProtectRoute><ResponsiveLayout /></ProtectRoute>}>
         <Route index element={<Home />} />
         <Route path="chats/:id" element={<Chats />} />
       </Route>
+      
+      {/* Auth routes */}
       <Route path="/auth">
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
       </Route>
+      
+      {/* Settings route */}
       <Route path="/settings" element={<ProtectRoute><Settings /></ProtectRoute>} />
+      
+      {/* Admin routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="chats" element={<ChatManagement />} />
         <Route path="messages" element={<MessagesManagement />} />
         <Route path="users" element={<UserManagement />} />
       </Route>
+      
       <Route path="*" element={<NotFound />} />
     </Route>
   )
@@ -76,6 +73,9 @@ const router = createBrowserRouter(
 
 function App() {
   const { userNotExists, userExists } = useAuthStore();
+// const {isMobile} = useResponsive();
+// console.log("screen width ::",isMobile);
+
 
   useEffect(() => {
     axios.get(`${server}/api/v1/users/getmyprofile`, { withCredentials: true })

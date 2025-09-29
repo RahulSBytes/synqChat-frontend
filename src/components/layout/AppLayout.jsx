@@ -1,11 +1,11 @@
-import UsersList from "../UsersList";
-import Profile from './Profile'
-import Navbar from "./Navbar";
+import UsersList from "../UsersList.jsx";
+import Profile from './Profile.jsx'
+import Navbar from "./Navbar.jsx";
 import { useUIStore } from "../../store/store.js";
 import CreateGroupForm from "../CreateGroupForm.jsx";
 import FindDialog from "../FindDialog.jsx";
 import Notification from "../Notification.jsx";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useChatStore } from "../../store/chatStore.js";
 import { useState } from "react";
 import useSocketEvents from "../../hooks/useSocketEvents.js";
@@ -13,6 +13,8 @@ import { Socket } from "socket.io-client";
 import { getSocket } from "../../context/SocketContext.jsx";
 import { ONLINE_USERS } from "../../constants/events.js";
 import { useAuthStore } from "../../store/authStore.js";
+import MobileAppLayout from "./MobileAppLayout.jsx";
+import MobileNavbar from "./MobileNavbar.jsx";
 // import { set } from "mongoose";
 
 export default function AppLayout() {
@@ -23,8 +25,9 @@ export default function AppLayout() {
   const socket = getSocket()
 
   console.log("currently loggedin user ::", user.username, user._id)
+const location = useLocation()
 
-
+const isHomePage = location.pathname === '/';
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useSocketEvents(socket, {
@@ -36,14 +39,7 @@ export default function AppLayout() {
 
   return (<div>
 
-    {/* mobile layout */}
-    <div>
-
-    </div>
-
-    {/* desktop layout layout */}
-
-    <div className="h-screen flex overflow-hidden border border-violet-600">
+    <div className="h-screen flex overflow-hidden">
       {
         isNewGroupClicked && <CreateGroupForm />
       }
@@ -66,7 +62,7 @@ export default function AppLayout() {
       </div>
 
       {/* Profile Details */}
-      {currentSelectedChatId && <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px] h-full">
+      {currentSelectedChatId && !isHomePage && <div className="hidden lg:flex flex-[0_0_250px] max-w-[300px] h-full">
         <Profile />
       </div>}
     </div>

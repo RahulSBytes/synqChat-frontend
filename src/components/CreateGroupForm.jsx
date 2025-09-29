@@ -161,14 +161,14 @@ const CreateGroupForm = () => {
           <div className="">
             <label className="block text-sm font-medium text-gray-300 mb-2"> Members </label>
             <div className="flex flex-col gap-3 pl-2 h-48 md:h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
-              {userdata.map(({ avatar, username, _id }) => (
+              {userdata.map(({ avatar,fullName, username, _id }) => (
                 <div key={_id} className="items-center flex justify-between pr-4">
                   <div className="flex gap-2 items-center min-w-0 flex-1">
                     <img src={avatar.url || '/image.png'}
                       className="h-8 w-8 rounded-full border-[2px] border-[#248F60] flex-shrink-0" />
                     <div>
 
-                      <span className="line-clamp-1 font-semibold text-zinc-50 text-[14px] md:text-base truncate">{username}</span>
+                      <span className="line-clamp-1 font-semibold text-zinc-50 text-[14px] md:text-base truncate">{fullName}</span>
                       <span className="line-clamp-1 font-semibold text-[10px] text-zinc-300">{username}</span>
                     </div>
                   </div>

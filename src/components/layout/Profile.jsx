@@ -1,12 +1,16 @@
 // profile.js
-import { ArrowUpRight, Clapperboard, Dot, FileAudio, FileMinus, Image } from 'lucide-react'
+import { ArrowUpRight, Clapperboard, Dot, Eye, FileAudio, FileMinus, Image } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore.js';
 import { useChatStore } from '../../store/chatStore.js';
 import { useMemo, useState } from 'react'
 import ShowProfileAttachmentList from '../minicomponents/ShowProfileAttachmentList.jsx';
 import { useApiStore } from '../../store/apiStore.js';
+import ViewMembers from '../ViewMembers.jsx';
+import { getSocket } from '../../context/SocketContext.jsx';
+import useSocketEvents from '../../hooks/useSocketEvents.js';
+import { GROUP_MEMBER_UPDATED } from '../../constants/events.js';
 
-function Details() {
+function Details({ mobileStyle }) {
 
     const user = useAuthStore((state) => state.user);
     const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
@@ -37,6 +41,8 @@ function Details() {
         return groups;
     }, [messagesRelatedToChat]);
 
+    const [isViewMembersClicked, setIsViewMembersClicked] = useState(false)
+
     // Use an object to track which file types are expanded
     const [expandedFileTypes, setExpandedFileTypes] = useState({});
 
@@ -46,6 +52,8 @@ function Details() {
 
     const selectedChatInfo = contacts.find((el) => el._id === currentSelectedChatId)
     const info = selectedChatInfo?.members?.find((el) => el._id != user._id)
+
+    // console.log("selectedChatInfo :::", selectedChatInfo)
 
     if (!selectedChatInfo) {
         return <p>Chat information not found</p>
@@ -96,8 +104,18 @@ function Details() {
         }));
     };
 
+    const socket = getSocket()
+    const updateChat = useApiStore(state => state.updateChat)
+
+    useSocketEvents(socket, {
+        [GROUP_MEMBER_UPDATED]: (data) => {
+            updateChat(data)
+        }
+    })
+
     return (
-        <aside className="hidden lg:flex bg-[#242424] flex-col px-6 py-8 min-h-0 overflow-hidden">
+        <aside className={`lg:flex bg-[#242424] flex-col px-6 py-8 min-h-0 overflow-hidden ${mobileStyle} flex-1 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]`}>
+            {isViewMembersClicked && <ViewMembers selectedChatInfo={selectedChatInfo} setIsViewMembersClicked={setIsViewMembersClicked} />}
             <div className="flex flex-col min-h-0 flex-1">
 
                 {/* ---------for group chat------------ */}
@@ -111,7 +129,7 @@ function Details() {
                                 alt="Group avatar"
                             />
                             <h4 className='font-semibold text-lg mt-2'>{selectedChatInfo.name}</h4>
-                            <p className='text-center text-zinc-400 text-sm font-handwriting'>{selectedChatInfo.members.length} members</p>
+                            <p className='cursor-pointer text-center text-zinc-400 text-sm font-handwriting flex gap-1 items-center' onClick={() => setIsViewMembersClicked(prev => !prev)}>{selectedChatInfo.members.length} members <Eye size={14} /></p>
                             <p className='text-center text-xs text-zinc-300 font-handwriting'>{selectedChatInfo.bio || selectedChatInfo.description}</p>
                         </div>
                     </div>
@@ -152,7 +170,7 @@ function Details() {
                                         <ArrowUpRight size={16} color='#5dbb63' />
                                     </div>
 
-                                    {expandedFileTypes[el.key] && el.files.length > 0 && (
+                                    {expandedFileTypes[el.key] && (
                                         <ShowProfileAttachmentList
                                             files={el.files}
                                             onClose={() => closeAttachmentList(el.key)}
@@ -161,14 +179,15 @@ function Details() {
                                 </div>
                             ))}
                         </div>
+                        <div className='flex flex-col items-start mt-2'>
+                            <button className='text-sm mb-1'> Delete all messages </button>
+                            <button className='text-sm text-red-400 hover:text-red-300'>Block this contact <input type="checkbox" defaultChecked className="checkbox checkbox-accent checkbox-xs ml-1" /></button>
+                        </div>
                     </div>
                 </div>
             </div>
             {/* <hr /> */}
-            <div className=''>
-                <button className='text-sm mb-1'> Delete all messages </button>
-                <button className='text-sm text-red-400 hover:text-red-300'>Block this contact <input type="checkbox" defaultChecked className="checkbox checkbox-accent checkbox-xs ml-1" /></button>
-            </div>
+
         </aside>
     )
 }
