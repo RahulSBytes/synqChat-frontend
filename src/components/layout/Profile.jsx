@@ -1,5 +1,5 @@
 // profile.js
-import { ArrowUpRight, Clapperboard, Dot, Eye, FileAudio, FileMinus, Image } from 'lucide-react'
+import { ArrowUpRight, Clapperboard, FileAudio, FileMinus, Image, PencilLine } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore.js';
 import { useChatStore } from '../../store/chatStore.js';
 import { useMemo, useState } from 'react'
@@ -8,7 +8,10 @@ import { useApiStore } from '../../store/apiStore.js';
 import ViewMembers from '../ViewMembers.jsx';
 import { getSocket } from '../../context/SocketContext.jsx';
 import useSocketEvents from '../../hooks/useSocketEvents.js';
-import { GROUP_MEMBER_UPDATED } from '../../constants/events.js';
+import { CHAT_CLEARED, GROUP_MEMBER_UPDATED } from '../../constants/events.js';
+import { server } from '../../constants/config.js';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 function Details({ mobileStyle }) {
 
@@ -106,12 +109,38 @@ function Details({ mobileStyle }) {
 
     const socket = getSocket()
     const updateChat = useApiStore(state => state.updateChat)
+    const fetchMessages = useApiStore(state => state.fetchMessages)
+
+    async function handleClearMessages(chatId) {
+        try {
+            const res = confirm("Do you really wanna clear this that?")
+            if (res) {
+                const { data } = await axios.delete(`${server}/api/v1/chats/${chatId}/clear-chat`, { withCredentials: true })
+                data.success ? toast.success("chat cleared successfully") : toast.error("failed clearing chat")
+            }
+        } catch (error) {
+            console.log("erooorr::", error)
+        }
+
+    }
+
 
     useSocketEvents(socket, {
         [GROUP_MEMBER_UPDATED]: (data) => {
             updateChat(data)
+        },
+        [CHAT_CLEARED]: async ({ chatId }) => {
+            console.log(typeof chatId, typeof currentSelectedChatId)
+            if (chatId == currentSelectedChatId) {
+                await fetchMessages(chatId); // learnnnnnnnnning *_*
+            }
         }
     })
+
+
+
+
+
 
     return (
         <aside className={`lg:flex bg-[#242424] flex-col px-6 py-8 min-h-0 overflow-hidden ${mobileStyle} flex-1 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]`}>
@@ -129,7 +158,7 @@ function Details({ mobileStyle }) {
                                 alt="Group avatar"
                             />
                             <h4 className='font-semibold text-lg mt-2'>{selectedChatInfo.name}</h4>
-                            <p className='cursor-pointer text-center text-zinc-400 text-sm font-handwriting flex gap-1 items-center' onClick={() => setIsViewMembersClicked(prev => !prev)}>{selectedChatInfo.members.length} members <Eye size={14} /></p>
+                            <p className='cursor-pointer text-center text-zinc-400 text-sm font-handwriting flex gap-1 items-center' onClick={() => setIsViewMembersClicked(prev => !prev)}>{selectedChatInfo.members.length} members <PencilLine size={14} /></p>
                             <p className='text-center text-xs text-zinc-300 font-handwriting'>{selectedChatInfo.bio || selectedChatInfo.description}</p>
                         </div>
                     </div>
@@ -180,7 +209,7 @@ function Details({ mobileStyle }) {
                             ))}
                         </div>
                         <div className='flex flex-col items-start mt-2'>
-                            <button className='text-sm mb-1'> Delete all messages </button>
+                            <button className='text-sm mb-1' onClick={() => handleClearMessages(selectedChatInfo._id)}> clear all messages </button>
                             <button className='text-sm text-red-400 hover:text-red-300'>Block this contact <input type="checkbox" defaultChecked className="checkbox checkbox-accent checkbox-xs ml-1" /></button>
                         </div>
                     </div>

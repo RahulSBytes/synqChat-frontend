@@ -3,7 +3,6 @@ import axios from "axios";
 import { server } from "../constants/config.js";
 import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
-import { useEffect } from "react";
 
 export const useApiStore = create(
   persist((set, get) => ({
@@ -15,11 +14,17 @@ export const useApiStore = create(
           withCredentials: true,
         })
       );
-
       if (error) return false;
-
       set({ messagesRelatedToChat: data.chat });
       return true;
+    },
+
+    updateMessageDeletionFromSocket: (data) => {
+      set((state) => ({
+        messagesRelatedToChat: state.messagesRelatedToChat.map((msg) =>
+          msg._id === data._id ? data : msg
+        ),
+      }));
     },
 
     addMessageFromSocket: (newMessage) => {
@@ -69,7 +74,7 @@ export const useApiStore = create(
           { withCredentials: true }
         )
       );
-// console.log(error)
+      // console.log(error)
       return error ? false : true;
     },
 
@@ -137,8 +142,6 @@ export const useApiStore = create(
           { withCredentials: true }
         )
       );
-
-      console.log("handleFriendRequest::", data, error);
       return error ? false : true;
     },
 
