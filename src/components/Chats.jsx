@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import TypingIndicator from './minicomponents/TypingIndicator.jsx'
 import { useApiStore } from '../store/apiStore.js';
 import { getSocket } from '../context/SocketContext.jsx';
-import { MESSAGE_DELETED, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../constants/events.js';
+import { MESSAGE_DELETED, NEW_MESSAGE, START_TYPING, STOP_TYPING, UPDATE_LAST_MESSAGE } from '../constants/events.js';
 import useSocketEvents from '../hooks/useSocketEvents.js';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useTypingIndicator } from '../hooks/useTypingIndicator.js';
@@ -43,7 +43,7 @@ function Chats() {
   const messagesEndRef = useRef(null);
 
   const user = useAuthStore((state) => state.user)
-  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket } = useApiStore()
+  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket,updateContactsList } = useApiStore()
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
 
   useEffect(() => {
@@ -175,12 +175,13 @@ function Chats() {
     const endpoint = isDeleteForEveryone
       ? `${server}/api/v1/chats/${messageId}/delete-for-everyone`
       : `${server}/api/v1/chats/${messageId}/delete-for-me`;
-    const { data } = await axios.delete(endpoint, { data: { messageInfo, members: chatInfo.members }, withCredentials: true })
-    console.log("data ::", data)
+    const { data } = await axios.delete(endpoint, { data: { messageInfo, members: chatInfo.members, chatId : currentSelectedChatId }, withCredentials: true })
+    data.success ? toast.success("message deleted successfully") : toast.error("error deleting message");
   }
 
   const [typingUsers, setTypingUsers] = useState(new Map());
   const { startTyping, stopTyping } = useTypingIndicator(chatInfo._id, chatInfo.members);
+
 
   useSocketEvents(socket, {
     [NEW_MESSAGE]: (data) => {
@@ -188,9 +189,11 @@ function Chats() {
     },
 
     [MESSAGE_DELETED]: (data) => {
-      console.log("dajakaj ::", data)
-      updateMessageDeletionFromSocket(data)
+      console.log("message deleted for everyone ::",data)
+      updateMessageDeletionFromSocket(data[0]);
     },
+
+    [UPDATE_LAST_MESSAGE]: (data) => updateContactsList(data),
 
     [START_TYPING]: ({ chatId: typingChatId, userId, username }) => {
       if (typingChatId === currentSelectedChatId && userId !== user._id) {
@@ -269,13 +272,14 @@ function Chats() {
 
       {/* MESSAGES SECTION */}
       <div ref={chatContainerRef} className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#444] px-6 py-4 flex flex-col'>
+      
         {messagesRelatedToChat.length > 0 ? (
           <>
             <div className="flex flex-col gap-2">
               {messagesRelatedToChat.map((msg, index) => {
                 const { _id, sender, attachments, text, textDeletedFor = [], textDeletedForEveryone = false, createdAt } = msg;
 
-                if (textDeletedFor.includes(user._id)) return null;
+                if (textDeletedFor.includes(user._id) && attachments.every((el)=> el.deletedFor.includes(user._id))) return null;
 
                 const msgDate = moment(createdAt).format('DD-MM-YYYY');
                 const prevMsgDate = index > 0 ? moment(messagesRelatedToChat[index - 1].createdAt).format('DD-MM-YYYY') : null;

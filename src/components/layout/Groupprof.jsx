@@ -41,7 +41,7 @@ function Groupprof({ data, onlineUsers = [] }) {
                         {data.groupChat ? data.name : (otherUser?.fullName || 'Unknown User')}
                     </span>
                     <span className="text-xs text-zinc-300 line-clamp-1">
-                        {data.lastMessage?.text || 'No messages yet'}
+                        {data.lastMessage.message || 'errorr'}
                     </span>
                 </div>
             </div>

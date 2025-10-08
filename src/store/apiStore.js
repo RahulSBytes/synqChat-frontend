@@ -20,6 +20,7 @@ export const useApiStore = create(
     },
 
     updateMessageDeletionFromSocket: (data) => {
+      console.log("updateMessageDeletionFromSocket ::", data)
       set((state) => ({
         messagesRelatedToChat: state.messagesRelatedToChat.map((msg) =>
           msg._id === data._id ? data : msg
@@ -44,6 +45,20 @@ export const useApiStore = create(
 
       set({ contacts: data.chats });
       return true;
+    },
+
+    updateContactsList: (data) => {
+
+      console.log("updateContactsList :: ",data)
+      const { contacts } = get();
+      set((state) => ({
+        contacts: state.contacts.map((contact) =>
+          data.chatId == contact._id
+            ? { ...contact, lastMessage: data.lastMessageObj }
+            : contact
+        ),
+      }));
+    
     },
 
     updateChat: (updatedChat) => {
