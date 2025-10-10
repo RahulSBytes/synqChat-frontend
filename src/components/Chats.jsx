@@ -175,7 +175,7 @@ function Chats() {
     const endpoint = isDeleteForEveryone
       ? `${server}/api/v1/chats/${messageId}/delete-for-everyone`
       : `${server}/api/v1/chats/${messageId}/delete-for-me`;
-    const { data } = await axios.delete(endpoint, { data: { messageInfo, members: chatInfo.members, chatId : currentSelectedChatId }, withCredentials: true })
+    const { data } = await axios.delete(endpoint, { data: { messageInfo, chatId : currentSelectedChatId }, withCredentials: true })
     data.success ? toast.success("message deleted successfully") : toast.error("error deleting message");
   }
 
@@ -189,7 +189,6 @@ function Chats() {
     },
 
     [MESSAGE_DELETED]: (data) => {
-      console.log("message deleted for everyone ::",data)
       updateMessageDeletionFromSocket(data[0]);
     },
 

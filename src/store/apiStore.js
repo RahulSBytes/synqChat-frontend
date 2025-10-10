@@ -20,11 +20,12 @@ export const useApiStore = create(
     },
 
     updateMessageDeletionFromSocket: (data) => {
-      console.log("updateMessageDeletionFromSocket ::", data)
+      console.log("updateMessageDeletionFromSocket ::", data);
       set((state) => ({
-        messagesRelatedToChat: state.messagesRelatedToChat.map((msg) =>
-          msg._id === data._id ? data : msg
-        ),
+        messagesRelatedToChat: state.messagesRelatedToChat.map((msg) => {
+          console.log(msg._id === data._id, msg._id, data._id);
+          return msg._id === data._id ? data : msg;
+        }),
       }));
     },
 
@@ -42,15 +43,11 @@ export const useApiStore = create(
       );
 
       if (error) return false;
-
       set({ contacts: data.chats });
       return true;
     },
 
     updateContactsList: (data) => {
-
-      console.log("updateContactsList :: ",data)
-      const { contacts } = get();
       set((state) => ({
         contacts: state.contacts.map((contact) =>
           data.chatId == contact._id
@@ -58,7 +55,6 @@ export const useApiStore = create(
             : contact
         ),
       }));
-    
     },
 
     updateChat: (updatedChat) => {

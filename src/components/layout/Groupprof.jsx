@@ -6,6 +6,7 @@ import { useChatStore } from "../../store/chatStore.js";
 
 function Groupprof({ data, onlineUsers = [] }) {
 
+
     const user = useAuthStore((state) => state.user);
     const noOfUnseenMsg = 9;
     const navigate = useNavigate();
@@ -31,7 +32,7 @@ function Groupprof({ data, onlineUsers = [] }) {
         <div onClick={() => contactClickHandler(data._id)} className={`flex gap-2 items-center p-2 pl-2 justify-between hover:bg-[#323232] cursor-pointer ${currentSelectedChatId === data._id ? 'bg-[#323232]' : ''}`}>
             <div className="flex gap-2 flex-1 items-center ">
                 <div className='relative'>
-                    <img src={data.groupChat ? data.avatar.url || '../../../image.png' : otherUser.avatar.url}
+                    <img src={data.groupChat ? data?.avatar?.url || '../../../image.png' : otherUser?.avatar?.url}
                         className="border border-[#414141] w-8 h-8  rounded-full object-cover" />
                     {!data.groupChat && onlineUsers.includes(otherUser._id) && <Dot className='absolute right-4 bottom-3' size={30} strokeWidth={3} color='#5dbb63' />}
                 </div>

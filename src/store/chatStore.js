@@ -54,7 +54,7 @@ export const useChatStore = create(
         })),
     }),
     {
-      name: "chat-storage", // 🔑 key where it’s saved in localStorage
+      name: "chat-storage", 
       partialize: (state) => ({
         currentSelectedChatId: state.currentSelectedChatId,
       }),
