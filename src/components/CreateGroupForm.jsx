@@ -30,8 +30,8 @@ const CreateGroupForm = () => {
       return;
     }
 
-    if (selectedMembers.length < 2) {
-      alert("Please select at least two member");
+    if (selectedMembers.length < 3) {
+      alert("Please select at least three member");
       return;
     }
 
@@ -45,6 +45,7 @@ const CreateGroupForm = () => {
     }
 
     const success = await createGroup(formData)
+    console.log("hellow new group ::", success)
     if (!success) return toast.error("error creating group")
       toast.success("group created successfully")
 

@@ -18,14 +18,45 @@ import axios from 'axios';
 import { server } from '../constants/config.js';
 
 function Chats() {
-  const { onlineUsers } = useOutletContext()
+  const { onlineUsers } = useOutletContext();
+
+  // ✅ All state/hooks at the top (always called)
   const [sending, setSending] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    messageId: null,
+    x: 0,
+    y: 0,
+    data: null
+  });
+  const [typingUsers, setTypingUsers] = useState(new Map());
 
   const emojiRef = useRef(null);
   const attachmentRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
+  const user = useAuthStore((state) => state.user);
+  const contacts = useApiStore((state) => state.contacts);
+  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket, updateContactsList } = useApiStore();
+  const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
+
+  const navigate = useNavigate();
+  const socket = getSocket();
+
+  const chatInfo = contacts?.find((el) => el._id == currentSelectedChatId);
+
+  // ✅ Call hook unconditionally with safe fallbacks
+  const { startTyping, stopTyping } = useTypingIndicator(
+    chatInfo?._id || null,
+    chatInfo?.members || []
+  );
+
+  // ✅ All useEffect hooks (always called)
   useEffect(() => {
     function handleClickOutside(e) {
       if (isEmojiOpen && emojiRef.current && !emojiRef.current.contains(e.target)) {
@@ -39,19 +70,13 @@ function Chats() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isEmojiOpen, isAttachmentOpen]);
 
-  const [msg, setMsg] = useState('');
-  const messagesEndRef = useRef(null);
-
-  const user = useAuthStore((state) => state.user)
-  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket,updateContactsList } = useApiStore()
-  const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
-
   useEffect(() => {
+    if (!currentSelectedChatId) return;
     (async function () {
-      const success = await fetchMessages(currentSelectedChatId)
-      if (!success) toast.error("failed fetching messages")
-    })()
-  }, [currentSelectedChatId])
+      const success = await fetchMessages(currentSelectedChatId);
+      if (!success) toast.error("failed fetching messages");
+    })();
+  }, [currentSelectedChatId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
@@ -61,19 +86,6 @@ function Chats() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   }, []);
 
-  function onEmojiSelect({ emoji }) {
-    setMsg(prev => prev + emoji)
-  }
-
-  const [contextMenu, setContextMenu] = useState({
-    visible: false,
-    messageId: null,
-    x: 0,
-    y: 0,
-    data: null
-  });
-
-  const chatContainerRef = useRef(null);
   useEffect(() => {
     const handleScroll = () => {
       if (contextMenu.visible) {
@@ -85,52 +97,55 @@ function Chats() {
     return () => el && el.removeEventListener("scroll", handleScroll);
   }, [contextMenu.visible]);
 
-  const handleContextMenu = (messageId, data, e) => {
-    e.preventDefault();
-    const menuWidth = 200;
-    const menuHeight = 150;
-
-    let x = e.clientX;
-    let y = e.clientY;
-
-    const { innerWidth, innerHeight } = window;
-    if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 10;
-    if (y + menuHeight > innerHeight) y = innerHeight - menuHeight - 10;
-
-    setContextMenu({ visible: true, messageId, x, y, data });
-  };
-
   useEffect(() => {
     const closeMenu = () => setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
     document.addEventListener("click", closeMenu);
     return () => document.removeEventListener("click", closeMenu);
   }, []);
 
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const handleFileSelect = (acceptedTypes) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = acceptedTypes;
-    input.multiple = true;
-    input.onchange = (e) => {
-      const newFiles = Array.from(e.target.files);
-      if (newFiles.length > 0) {
-        setSelectedFiles(currentFiles => {
-          const emptySpace = 6 - currentFiles.length;
-          if (emptySpace <= 0 || newFiles.length > emptySpace) {
-            toast.error("only 6 files can be sent at a time.")
-            return currentFiles;
-          }
-          const updatedFiles = [...currentFiles, ...newFiles.slice(0, emptySpace)];
-          return updatedFiles;
+  useSocketEvents(socket, {
+    [NEW_MESSAGE]: (data) => {
+      if (data.chat === currentSelectedChatId) addMessageFromSocket(data);
+    },
+    [MESSAGE_DELETED]: (data) => {
+      updateMessageDeletionFromSocket(data[0]);
+    },
+    [UPDATE_LAST_MESSAGE]: (data) => updateContactsList(data),
+    [START_TYPING]: ({ chatId: typingChatId, userId, username }) => {
+      if (typingChatId === currentSelectedChatId && userId !== user._id) {
+        setTypingUsers(prev => new Map(prev).set(userId, username));
+      }
+    },
+    [STOP_TYPING]: ({ chatId: typingChatId, userId }) => {
+      if (typingChatId === currentSelectedChatId) {
+        setTypingUsers(prev => {
+          const m = new Map(prev);
+          m.delete(userId);
+          return m;
         });
       }
-    };
-    input.onclick = setIsAttachmentOpen((prev) => !prev);
-    input.click();
-  };
+    },
+  });
 
-  const socket = getSocket()
+  // ✅ Render loading state in JSX, not early return
+  if (!chatInfo || !user) {
+    return <div>Loading...</div>;
+  }
+
+  // ✅ Now safe to destructure (chatInfo is guaranteed to exist)
+  let { _id: otherUserId, fullName, avatar } = chatInfo.members.find((el) => el._id != user._id) || {};
+  if (chatInfo.groupChat) fullName = chatInfo.name;
+
+
+  let isDeleteForEveryone = false;
+  async function handleDeleteMessage(messageId, messageInfo, isDeleteForEveryone) {
+    const endpoint = isDeleteForEveryone
+      ? `${server}/api/v1/chats/${messageId}/delete-for-everyone`
+      : `${server}/api/v1/chats/${messageId}/delete-for-me`;
+    const { data } = await axios.delete(endpoint, { data: { messageInfo, chatId: currentSelectedChatId }, withCredentials: true })
+    data.success ? toast.success("message deleted successfully") : toast.error("error deleting message");
+  }
+
 
   async function handleSendMsg() {
     const { text, attachment } = { text: msg, attachment: selectedFiles };
@@ -163,52 +178,29 @@ function Chats() {
     e.target.style.height = Math.min(e.target.scrollHeight, 90) + 'px';
   };
 
-  const contacts = useApiStore((state) => state.contacts)
-  const chatInfo = contacts?.find((el) => el._id == currentSelectedChatId)
-  if (!chatInfo || !user) return <div>Loading...</div>;
 
-  let { _id: otherUserId, fullName, avatar } = chatInfo.members.find((el) => el._id != user._id)
-  if (chatInfo.groupChat) fullName = chatInfo.name
-
-  let isDeleteForEveryone = false;
-  async function handleDeleteMessage(messageId, messageInfo, isDeleteForEveryone) {
-    const endpoint = isDeleteForEveryone
-      ? `${server}/api/v1/chats/${messageId}/delete-for-everyone`
-      : `${server}/api/v1/chats/${messageId}/delete-for-me`;
-    const { data } = await axios.delete(endpoint, { data: { messageInfo, chatId : currentSelectedChatId }, withCredentials: true })
-    data.success ? toast.success("message deleted successfully") : toast.error("error deleting message");
-  }
-
-  const [typingUsers, setTypingUsers] = useState(new Map());
-  const { startTyping, stopTyping } = useTypingIndicator(chatInfo._id, chatInfo.members);
-
-
-  useSocketEvents(socket, {
-    [NEW_MESSAGE]: (data) => {
-      if (data.chat === currentSelectedChatId) addMessageFromSocket(data);
-    },
-
-    [MESSAGE_DELETED]: (data) => {
-      updateMessageDeletionFromSocket(data[0]);
-    },
-
-    [UPDATE_LAST_MESSAGE]: (data) => updateContactsList(data),
-
-    [START_TYPING]: ({ chatId: typingChatId, userId, username }) => {
-      if (typingChatId === currentSelectedChatId && userId !== user._id) {
-        setTypingUsers(prev => new Map(prev).set(userId, username));
-      }
-    },
-    [STOP_TYPING]: ({ chatId: typingChatId, userId }) => {
-      if (typingChatId === currentSelectedChatId) {
-        setTypingUsers(prev => {
-          const m = new Map(prev);
-          m.delete(userId);
-          return m;
+  const handleFileSelect = (acceptedTypes) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = acceptedTypes;
+    input.multiple = true;
+    input.onchange = (e) => {
+      const newFiles = Array.from(e.target.files);
+      if (newFiles.length > 0) {
+        setSelectedFiles(currentFiles => {
+          const emptySpace = 6 - currentFiles.length;
+          if (emptySpace <= 0 || newFiles.length > emptySpace) {
+            toast.error("only 6 files can be sent at a time.")
+            return currentFiles;
+          }
+          const updatedFiles = [...currentFiles, ...newFiles.slice(0, emptySpace)];
+          return updatedFiles;
         });
       }
-    },
-  });
+    };
+    input.onclick = setIsAttachmentOpen((prev) => !prev);
+    input.click();
+  };
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -216,7 +208,25 @@ function Chats() {
     value.length > 0 ? startTyping() : stopTyping();
   }
 
-  const navigate = useNavigate();
+  const handleContextMenu = (messageId, data, e) => {
+    e.preventDefault();
+    const menuWidth = 200;
+    const menuHeight = 150;
+
+    let x = e.clientX;
+    let y = e.clientY;
+
+    const { innerWidth, innerHeight } = window;
+    if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 10;
+    if (y + menuHeight > innerHeight) y = innerHeight - menuHeight - 10;
+
+    setContextMenu({ visible: true, messageId, x, y, data });
+  };
+
+  function onEmojiSelect({ emoji }) {
+    setMsg(prev => prev + emoji)
+  }
+
 
   return (
     <div className="flex-1 min-w-0 h-full flex flex-col relative">
@@ -271,14 +281,14 @@ function Chats() {
 
       {/* MESSAGES SECTION */}
       <div ref={chatContainerRef} className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#444] px-6 py-4 flex flex-col'>
-      
+
         {messagesRelatedToChat.length > 0 ? (
           <>
             <div className="flex flex-col gap-2">
               {messagesRelatedToChat.map((msg, index) => {
                 const { _id, sender, attachments, text, textDeletedFor = [], textDeletedForEveryone = false, createdAt } = msg;
 
-                if (textDeletedFor.includes(user._id) && attachments.every((el)=> el.deletedFor.includes(user._id))) return null;
+                if (textDeletedFor.includes(user._id) && attachments.every((el) => el.deletedFor.includes(user._id))) return null;
 
                 const msgDate = moment(createdAt).format('DD-MM-YYYY');
                 const prevMsgDate = index > 0 ? moment(messagesRelatedToChat[index - 1].createdAt).format('DD-MM-YYYY') : null;
@@ -313,18 +323,18 @@ function Chats() {
                             <input type="text" id="attachment" className="hidden" />
                           </label>
                         )}
-                        { (text.length > 0 || textDeletedForEveryone) && (
+                        {(text.length > 0 || textDeletedForEveryone) && (
                           <div
-                            
+
                           >
-                            { textDeletedForEveryone ? (
+                            {textDeletedForEveryone ? (
                               <span className="text-xs italic text-gray-400 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
                             ) : (
                               <span className={`whitespace-pre-wrap break-words max-w-[70%] py-2 px-3 rounded-t-md ${sender._id === user._id
-                              ? ' bg-[#353535] rounded-l-lg '
-                              : 'bg-[#689969] rounded-r-lg'
-                              }`}
-                            onContextMenu={(e) => handleContextMenu(_id, { type: 'text', text }, e)} >{text}</span>
+                                ? ' bg-[#353535] rounded-l-lg '
+                                : 'bg-[#689969] rounded-r-lg'
+                                }`}
+                                onContextMenu={(e) => handleContextMenu(_id, { type: 'text', text }, e)} >{text}</span>
                             )}
                           </div>
                         )}

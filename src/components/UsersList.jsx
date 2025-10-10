@@ -18,9 +18,12 @@ function UsersList({ onlineUsers }) {
   const contacts = useApiStore((state) => state.contacts)
   const fetchContact = useApiStore((state) => state.fetchContact)
 
+console.log("contacts",contacts)
+
   useEffect(() => {
     (
       async function () {
+        console.log("hum tum")
         const success = await fetchContact();
         if (!success) toast.error("error fetching contact")
       }

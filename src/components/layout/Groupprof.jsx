@@ -42,14 +42,14 @@ function Groupprof({ data, onlineUsers = [] }) {
                         {data.groupChat ? data.name : (otherUser?.fullName || 'Unknown User')}
                     </span>
                     <span className="text-xs text-zinc-300 line-clamp-1">
-                        {data.lastMessage.message || 'errorr'}
+                        {data?.lastMessage?.message || 'errorr'}
                     </span>
                 </div>
             </div>
 
             <div className="flex flex-col items-end gap-2 mr-3 py-1 h-full">
                 <span className="text-xs text-zinc-300">
-                    {data.lastMessage?.timestamp ? moment(data.lastMessage.timestamp).fromNow() : ''}
+                    {data.lastMessage?.timestamp ? moment(data?.lastMessage?.timestamp).fromNow() : ''}
                 </span>
 
                 {noOfUnseenMsg > 0 && (

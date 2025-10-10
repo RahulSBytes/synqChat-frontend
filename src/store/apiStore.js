@@ -5,7 +5,8 @@ import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
 
 export const useApiStore = create(
-  persist((set, get) => ({
+  // persist(
+    (set, get) => ({
     messagesRelatedToChat: [],
 
     fetchMessages: async (currentSelectedChatId) => {
@@ -38,10 +39,12 @@ export const useApiStore = create(
     contacts: [],
 
     fetchContact: async () => {
+      console.log("fetchContact ::",)
       const [data, error] = await apiRequest(
         axios.get(`${server}/api/v1/chats`, { withCredentials: true })
       );
-
+      
+      console.log("fetchContact ::",data)
       if (error) return false;
       set({ contacts: data.chats });
       return true;
@@ -101,12 +104,11 @@ export const useApiStore = create(
     },
 
     createGroup: async (formData) => {
-      const [data, error] = await apiRequest(
+        const [data, error] = await apiRequest(
         axios.post(`${server}/api/v1/chats`, formData, {
           withCredentials: true,
         })
       );
-
       return error ? false : true;
     },
 
@@ -241,5 +243,6 @@ export const useApiStore = create(
     //   axios.delete(`${server}/api/v1/chat/leave/${chatId}`, {
     //     withCredentials: true,
     //   }),
-  }))
+  })
+// )
 );

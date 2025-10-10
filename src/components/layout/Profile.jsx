@@ -20,13 +20,14 @@ function Details({ mobileStyle }) {
     const contacts = useApiStore((state) => state.contacts)
     const messagesRelatedToChat = useApiStore((state) => state.messagesRelatedToChat)
 
-    if (!user) return <p>loading.......!</p>
+
 
     const categorized = useMemo(() => {
         const allAttachments = messagesRelatedToChat
             .map((message) => message.attachments)
             .flat()
             .filter(Boolean); // Filter out null/undefined attachments
+
 
         const groups = {
             raw: [],
@@ -49,18 +50,10 @@ function Details({ mobileStyle }) {
     // Use an object to track which file types are expanded
     const [expandedFileTypes, setExpandedFileTypes] = useState({});
 
-    if (!contacts || !currentSelectedChatId) {
-        return null
-    }
-
-    const selectedChatInfo = contacts.find((el) => el._id === currentSelectedChatId)
-    const info = selectedChatInfo?.members?.find((el) => el._id != user._id)
 
     // console.log("selectedChatInfo :::", selectedChatInfo)
 
-    if (!selectedChatInfo) {
-        return <p>Chat information not found</p>
-    }
+
 
     const filesObject = [
         {
@@ -93,23 +86,38 @@ function Details({ mobileStyle }) {
         },
     ]
 
-    const toggleFileType = (fileKey) => {
-        setExpandedFileTypes(prev => ({
-            ...prev,
-            [fileKey]: !prev[fileKey]
-        }));
-    };
 
-    const closeAttachmentList = (fileKey) => {
-        setExpandedFileTypes(prev => ({
-            ...prev,
-            [fileKey]: false
-        }));
-    };
 
     const socket = getSocket()
     const updateChat = useApiStore(state => state.updateChat)
     const fetchMessages = useApiStore(state => state.fetchMessages)
+
+
+    useSocketEvents(socket, {
+        [GROUP_MEMBER_UPDATED]: (data) => {
+            updateChat(data)
+        },
+        [CHAT_CLEARED]: async ({ chatId }) => {
+            console.log(typeof chatId, typeof currentSelectedChatId)
+            if (chatId == currentSelectedChatId) {
+                await fetchMessages(chatId); // learnnnnnnnnning *_*
+            }
+        }
+    })
+
+    if (!contacts || !currentSelectedChatId) {
+        return null
+    }
+
+    const selectedChatInfo = contacts.find((el) => el._id === currentSelectedChatId)
+    const info = selectedChatInfo?.members?.find((el) => el._id != user._id)
+
+
+    if (!user) return <p>loading.......!</p>
+
+    if (!selectedChatInfo) {
+        return <p>Chat information not found</p>
+    }
 
     async function handleClearMessages(chatId) {
         try {
@@ -125,21 +133,19 @@ function Details({ mobileStyle }) {
     }
 
 
-    useSocketEvents(socket, {
-        [GROUP_MEMBER_UPDATED]: (data) => {
-            updateChat(data)
-        },
-        [CHAT_CLEARED]: async ({ chatId }) => {
-            console.log(typeof chatId, typeof currentSelectedChatId)
-            if (chatId == currentSelectedChatId) {
-                await fetchMessages(chatId); // learnnnnnnnnning *_*
-            }
-        }
-    })
+    const toggleFileType = (fileKey) => {
+        setExpandedFileTypes(prev => ({
+            ...prev,
+            [fileKey]: !prev[fileKey]
+        }));
+    };
 
-
-
-
+    const closeAttachmentList = (fileKey) => {
+        setExpandedFileTypes(prev => ({
+            ...prev,
+            [fileKey]: false
+        }));
+    };
 
 
     return (
