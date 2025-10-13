@@ -5,7 +5,7 @@ import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
 
 export const useApiStore = create(
-  // persist(
+  persist(
     (set, get) => ({
     messagesRelatedToChat: [],
 
@@ -39,12 +39,11 @@ export const useApiStore = create(
     contacts: [],
 
     fetchContact: async () => {
-      console.log("fetchContact ::",)
       const [data, error] = await apiRequest(
         axios.get(`${server}/api/v1/chats`, { withCredentials: true })
       );
       
-      console.log("fetchContact ::",data)
+      // console.log("fetchContact ::",data)
       if (error) return false;
       set({ contacts: data.chats });
       return true;
@@ -60,7 +59,14 @@ export const useApiStore = create(
       }));
     },
 
+    newContactAdded: (data) => {
+      set((state) => ({
+        contacts: state.contacts.push(data)
+      }));
+    },
+
     updateChat: (updatedChat) => {
+      console.log("updatedChat :: ",updatedChat)
       set((state) => ({
         contacts: state.contacts.map((chat) =>
           chat._id === updatedChat._id ? { ...chat, ...updatedChat } : chat
@@ -244,5 +250,5 @@ export const useApiStore = create(
     //     withCredentials: true,
     //   }),
   })
-// )
+)
 );

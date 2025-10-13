@@ -18,12 +18,11 @@ function UsersList({ onlineUsers }) {
   const contacts = useApiStore((state) => state.contacts)
   const fetchContact = useApiStore((state) => state.fetchContact)
 
-console.log("contacts",contacts)
+  console.log("contacts ::",contacts)
 
   useEffect(() => {
     (
       async function () {
-        console.log("hum tum")
         const success = await fetchContact();
         if (!success) toast.error("error fetching contact")
       }
@@ -47,6 +46,7 @@ console.log("contacts",contacts)
 
   const isGroupIconClicked = useUIStore((state) => state.isGroupIconClicked)
   const navigate = useNavigate()
+
 
   return (
     <aside className="flex flex-col bg-[#242424] h-screen w-full pt-6">

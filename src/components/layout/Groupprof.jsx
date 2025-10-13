@@ -19,12 +19,13 @@ function Groupprof({ data, onlineUsers = [] }) {
         navigate(`/chats/${chatId}`)
     }
 
-    let otherUser;
-    if (!data.groupChat) otherUser = data.members.find((el) => el._id != user._id);
 
     if (!data) {
         return <div>Loading chat...</div>
     }
+
+    let otherUser;
+    if (!data.groupChat) otherUser = data.members.find((el) => el._id != user._id);
 
 
 

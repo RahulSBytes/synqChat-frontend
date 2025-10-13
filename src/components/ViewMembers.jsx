@@ -6,15 +6,13 @@ import { getSocket } from '../context/SocketContext'
 import useSocketEvents from '../hooks/useSocketEvents'
 import { useApiStore } from '../store/apiStore'
 import toast from 'react-hot-toast'
-
-
-
+import moment from 'moment'
 
 
 function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
 
     const [addMember, setAddMember] = useState('')
-
+    // console.log("filteredMembers ::", filteredMembers)
     const removeMemberFromGroup = useApiStore(state => state.removeMemberFromGroup)
     const addMemberInGroup = useApiStore(state => state.addMemberInGroup)
 
@@ -24,10 +22,11 @@ function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
     }
 
     async function handleSubmit() {
+        setAddMember('')
         const success = await addMemberInGroup(selectedChatInfo._id, addMember);
-        console.log("sucess::",success);
         success ? toast.success("member successfully added") : toast.error("error adding member");
     }
+
 
     return (
         <div className="fixed inset-0  bg-black/50 flex items-center justify-center z-50">
@@ -35,24 +34,47 @@ function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
 
                 <X onClick={() => setIsViewMembersClicked(prev => !prev)} className="absolute top-6 right-6 text-gray-500 hover:text-gray-700" size={20} strokeWidth={3} color="#c1c1c1" />
                 <h2 className="text-xl font-semibold mb-4 text-center">Members</h2>
-                {selectedChatInfo.members?.length > 0 ? <div className="flex flex-col pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
-                    {
-                        selectedChatInfo.members.map(({ _id, username, fullName, avatar }) =>
-                            <div key={_id} className="items-center flex justify-between px-4 py-2 hover:bg-[#424242]">
-                                <div className="flex gap-2 items-center min-w-0 flex-1">
-                                    <img src={avatar.url || '/image.png'}
-                                        className="h-8 w-8 rounded-full border-[2px] border-[#248F60] flex-shrink-0" />
-                                    <div>
+                {selectedChatInfo.members?.length > 0 ?
+                    <div className="flex flex-col pl-2 h-60 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]">
+                        <div>
 
-                                        <span className="line-clamp-1 font-semibold text-zinc-50 text-[14px] md:text-base truncate">{fullName}</span>
-                                        <span className="line-clamp-1 font-semibold text-[10px] text-zinc-300">{username}</span>
+                            {
+                                selectedChatInfo.members.map(({ _id, username, fullName, avatar }) =>
+                                    <div key={_id} className="  items-center flex justify-between px-4 py-2 hover:bg-[#424242]">
+                                        <div className="flex gap-2 items-center min-w-0 flex-1">
+                                            <img src={avatar.url || '/image.png'}
+                                                className="h-8 w-8 rounded-full border-[2px] border-[#248F60] flex-shrink-0" />
+                                            <div>
+
+                                                <span className="line-clamp-1 font-semibold text-zinc-50 text-[14px] md:text-base truncate">{fullName}</span>
+                                                <span className="line-clamp-1 font-semibold text-[10px] text-zinc-300">{username}</span>
+                                            </div>
+                                        </div>
+                                        <span className='cursor-pointer'>{selectedChatInfo.creator._id !== _id ? <Trash2 size={21} onClick={() => removeMemberHandler(_id)} /> : <span className='text-[#248F60] hover:text-[#6ad2a5]'>Creator</span>}</span>
                                     </div>
-                                </div>
-                                <span className='cursor-pointer'>{selectedChatInfo.creator._id !== _id ? <Trash2 size={21} onClick={() => removeMemberHandler(_id)} /> : <span className='text-[#248F60] hover:text-[#6ad2a5]'>Creator</span>}</span>
+                                )
+                            }
+                        </div>
+                        {selectedChatInfo.removedMembers?.length > 0 &&
+                            <div className='mt-4'>
+                                <h5 className='ml-3 text-zinc-200' >Past Members</h5>
+                                {selectedChatInfo.removedMembers?.map(({ userId, removedAt }) =>
+                                    <div key={userId._id} className=" items-center flex justify-between px-4 py-2 hover:bg-[#424242]">
+                                        <div className="flex gap-2 items-center min-w-0 flex-1">
+                                            <img src={userId?.avatar?.url || '/image.png'}
+                                                className="h-8 w-8 rounded-full border-[2px] border-[#248F60] flex-shrink-0" />
+                                            <div>
+
+                                                <span className="line-clamp-1 font-semibold text-zinc-50 text-[14px] md:text-base truncate">{userId.fullName}</span>
+                                                <span className="line-clamp-1 font-semibold text-[10px] text-zinc-300">{userId.username}</span>
+                                            </div>
+                                        </div>
+                                        <span className='text-sm'>{moment(removedAt).fromNow()}</span>
+                                    </div>
+                                )}
                             </div>
-                        )
-                    }
-                </div>
+                        }
+                    </div>
                     :
                     <div className='text-center text-zinc-300'> no members</div>
                 }

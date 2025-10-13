@@ -98,7 +98,6 @@ function Details({ mobileStyle }) {
             updateChat(data)
         },
         [CHAT_CLEARED]: async ({ chatId }) => {
-            console.log(typeof chatId, typeof currentSelectedChatId)
             if (chatId == currentSelectedChatId) {
                 await fetchMessages(chatId); // learnnnnnnnnning *_*
             }
@@ -216,7 +215,10 @@ function Details({ mobileStyle }) {
                         </div>
                         <div className='flex flex-col items-start mt-2'>
                             <button className='text-sm mb-1' onClick={() => handleClearMessages(selectedChatInfo._id)}> clear all messages </button>
-                            <button className='text-sm text-red-400 hover:text-red-300'>Block this contact <input type="checkbox" defaultChecked className="checkbox checkbox-accent checkbox-xs ml-1" /></button>
+                           { 
+                          selectedChatInfo.groupChat?  <button className='text-sm text-red-400 hover:text-red-300'> leave this group </button>
+                          :  <button className='text-sm text-red-400 hover:text-red-300'>Block this contact </button>
+                           }
                         </div>
                     </div>
                 </div>

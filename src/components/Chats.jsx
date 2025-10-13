@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import TypingIndicator from './minicomponents/TypingIndicator.jsx'
 import { useApiStore } from '../store/apiStore.js';
 import { getSocket } from '../context/SocketContext.jsx';
-import { MESSAGE_DELETED, NEW_MESSAGE, START_TYPING, STOP_TYPING, UPDATE_LAST_MESSAGE } from '../constants/events.js';
+import { MESSAGE_DELETED, NEW_CONTACT_ADDED, NEW_MESSAGE, REFETCH_CHATS, START_TYPING, STOP_TYPING, UPDATE_LAST_MESSAGE } from '../constants/events.js';
 import useSocketEvents from '../hooks/useSocketEvents.js';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useTypingIndicator } from '../hooks/useTypingIndicator.js';
@@ -42,7 +42,7 @@ function Chats() {
 
   const user = useAuthStore((state) => state.user);
   const contacts = useApiStore((state) => state.contacts);
-  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket, updateContactsList } = useApiStore();
+  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket, updateContactsList, fetchContact } = useApiStore();
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
 
   const navigate = useNavigate();
@@ -107,6 +107,9 @@ function Chats() {
     [NEW_MESSAGE]: (data) => {
       if (data.chat === currentSelectedChatId) addMessageFromSocket(data);
     },
+    [REFETCH_CHATS]: () => {
+      fetchContact();
+    },
     [MESSAGE_DELETED]: (data) => {
       updateMessageDeletionFromSocket(data[0]);
     },
@@ -125,6 +128,7 @@ function Chats() {
         });
       }
     },
+
   });
 
   // ✅ Render loading state in JSX, not early return
@@ -280,7 +284,7 @@ function Chats() {
       </div>
 
       {/* MESSAGES SECTION */}
-      <div ref={chatContainerRef} className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#444] px-6 py-4 flex flex-col'>
+      <div ref={chatContainerRef} className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#222] px-6 py-4 flex flex-col'>
 
         {messagesRelatedToChat.length > 0 ? (
           <>
