@@ -5,8 +5,7 @@ import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
 
 export const useApiStore = create(
-  persist(
-    (set, get) => ({
+  persist((set, get) => ({
     messagesRelatedToChat: [],
 
     fetchMessages: async (currentSelectedChatId) => {
@@ -42,7 +41,7 @@ export const useApiStore = create(
       const [data, error] = await apiRequest(
         axios.get(`${server}/api/v1/chats`, { withCredentials: true })
       );
-      
+
       // console.log("fetchContact ::",data)
       if (error) return false;
       set({ contacts: data.chats });
@@ -61,12 +60,12 @@ export const useApiStore = create(
 
     newContactAdded: (data) => {
       set((state) => ({
-        contacts: state.contacts.push(data)
+        contacts: state.contacts.push(data),
       }));
     },
 
     updateChat: (updatedChat) => {
-      console.log("updatedChat :: ",updatedChat)
+      console.log("updatedChat :: ", updatedChat);
       set((state) => ({
         contacts: state.contacts.map((chat) =>
           chat._id === updatedChat._id ? { ...chat, ...updatedChat } : chat
@@ -110,12 +109,12 @@ export const useApiStore = create(
     },
 
     createGroup: async (formData) => {
-        const [data, error] = await apiRequest(
+      const [data, error] = await apiRequest(
         axios.post(`${server}/api/v1/chats`, formData, {
           withCredentials: true,
         })
       );
-      return error ? false : true;
+      return error ? false : data;
     },
 
     handleInvite: async (userId) => {
@@ -161,6 +160,19 @@ export const useApiStore = create(
           { withCredentials: true }
         )
       );
+      return error ? false : true;
+    },
+
+    leaveGroup: async (chatId, newCreatorId = null) => {
+      const [data, error] = await apiRequest(
+        axios.patch(
+          `${server}/api/v1/chats/leavegroup`,
+          { chatId, newCreatorId },
+          { withCredentials: true }
+        )
+      );
+
+      console.log("leaveGroup::",data, error)
       return error ? false : true;
     },
 
@@ -249,6 +261,5 @@ export const useApiStore = create(
     //   axios.delete(`${server}/api/v1/chat/leave/${chatId}`, {
     //     withCredentials: true,
     //   }),
-  })
-)
+  }))
 );

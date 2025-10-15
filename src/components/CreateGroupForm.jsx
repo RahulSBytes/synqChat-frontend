@@ -5,6 +5,7 @@ import { useAuthStore } from "../store/authStore.js";
 import { eligibleUserForGroupCreation } from "../helpers/helpers.js";
 import { useApiStore } from "../store/apiStore.js";
 import toast from "react-hot-toast";
+import { useChatStore } from "../store/chatStore.js";
 
 const CreateGroupForm = () => {
   const setIsNewGroupClicked = useUIStore((state) => state.setIsNewGroupClicked);
@@ -17,7 +18,7 @@ const CreateGroupForm = () => {
   const contacts = useApiStore((state) => state.contacts)
   const createGroup = useApiStore((state) => state.createGroup)
   const user = useAuthStore((state) => state.user)
-
+const setCurrentSelectedChatId = useChatStore((state)=>state.setCurrentSelectedChatId)
 
   const userdata = eligibleUserForGroupCreation(contacts, user);
 
@@ -45,8 +46,10 @@ const CreateGroupForm = () => {
     }
 
     const success = await createGroup(formData)
-    console.log("hellow new group ::", success)
+    // console.log("success :: ", groupData)
     if (!success) return toast.error("error creating group")
+
+      if(success.groupData._id) setCurrentSelectedChatId(success.groupData._id)
       toast.success("group created successfully")
 
     setIsNewGroupClicked();

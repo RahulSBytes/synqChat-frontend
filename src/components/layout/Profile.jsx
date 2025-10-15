@@ -12,6 +12,7 @@ import { CHAT_CLEARED, GROUP_MEMBER_UPDATED } from '../../constants/events.js';
 import { server } from '../../constants/config.js';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import TransferGroupOwnershipWin from '../minicomponents/transferGroupOwnershipWin.jsx';
 
 function Details({ mobileStyle }) {
 
@@ -19,7 +20,7 @@ function Details({ mobileStyle }) {
     const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
     const contacts = useApiStore((state) => state.contacts)
     const messagesRelatedToChat = useApiStore((state) => state.messagesRelatedToChat)
-
+    const [grpOwnerWin, setGrpOwnerWin] = useState(false)
 
 
     const categorized = useMemo(() => {
@@ -89,20 +90,13 @@ function Details({ mobileStyle }) {
 
 
     const socket = getSocket()
-    const updateChat = useApiStore(state => state.updateChat)
+    const leaveGroup = useApiStore(state => state.leaveGroup)
     const fetchMessages = useApiStore(state => state.fetchMessages)
 
 
-    useSocketEvents(socket, {
-        [GROUP_MEMBER_UPDATED]: (data) => {
-            updateChat(data)
-        },
-        [CHAT_CLEARED]: async ({ chatId }) => {
-            if (chatId == currentSelectedChatId) {
-                await fetchMessages(chatId); // learnnnnnnnnning *_*
-            }
-        }
-    })
+    // useSocketEvents(socket, {
+        
+    // })
 
     if (!contacts || !currentSelectedChatId) {
         return null
@@ -132,6 +126,7 @@ function Details({ mobileStyle }) {
     }
 
 
+
     const toggleFileType = (fileKey) => {
         setExpandedFileTypes(prev => ({
             ...prev,
@@ -147,9 +142,22 @@ function Details({ mobileStyle }) {
     };
 
 
+    async function handleOwnerChange(newCreatorId = null) {
+        const success = await leaveGroup(selectedChatInfo._id, newCreatorId);
+        if (success) {
+            toast.success("left group successfully")
+            setGrpOwnerWin(false)
+        } else {
+            toast.error("error leaving group")
+        }
+    }
+
+    const openOwnerShipTransferWindow = selectedChatInfo.groupChat && (selectedChatInfo.creator._id == user._id) && grpOwnerWin
+
     return (
         <aside className={`lg:flex bg-[#242424] flex-col px-6 py-8 min-h-0 overflow-hidden ${mobileStyle} flex-1 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]`}>
             {isViewMembersClicked && <ViewMembers selectedChatInfo={selectedChatInfo} setIsViewMembersClicked={setIsViewMembersClicked} />}
+            { openOwnerShipTransferWindow && <TransferGroupOwnershipWin handleOwnerChange={handleOwnerChange} selectedChatInfo={selectedChatInfo} setGrpOwnerWin={setGrpOwnerWin} />}
             <div className="flex flex-col min-h-0 flex-1">
 
                 {/* ---------for group chat------------ */}
@@ -214,11 +222,11 @@ function Details({ mobileStyle }) {
                             ))}
                         </div>
                         <div className='flex flex-col items-start mt-2'>
-                            <button className='text-sm mb-1' onClick={() => handleClearMessages(selectedChatInfo._id)}> clear all messages </button>
-                           { 
-                          selectedChatInfo.groupChat?  <button className='text-sm text-red-400 hover:text-red-300'> leave this group </button>
-                          :  <button className='text-sm text-red-400 hover:text-red-300'>Block this contact </button>
-                           }
+                            <button className='text-sm mb-1' onClick={() => handleClearMessages(selectedChatInfo._id)}> Clear all messages </button>
+                            {
+                                selectedChatInfo.groupChat ? <button className='text-sm text-red-400 hover:text-red-300' onClick={() => selectedChatInfo.creator._id == user._id ? setGrpOwnerWin(prev => !prev) : handleOwnerChange()}> leave this group </button>
+                                    : <button className='text-sm text-red-400 hover:text-red-300'>Block this contact </button>
+                            }
                         </div>
                     </div>
                 </div>

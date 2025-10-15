@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import TypingIndicator from './minicomponents/TypingIndicator.jsx'
 import { useApiStore } from '../store/apiStore.js';
 import { getSocket } from '../context/SocketContext.jsx';
-import { MESSAGE_DELETED, NEW_CONTACT_ADDED, NEW_MESSAGE, REFETCH_CHATS, START_TYPING, STOP_TYPING, UPDATE_LAST_MESSAGE } from '../constants/events.js';
+import { CHAT_CLEARED, GROUP_MEMBER_UPDATED, MESSAGE_DELETED, NEW_CONTACT_ADDED, NEW_MESSAGE, REFETCH_CHATS, START_TYPING, STOP_TYPING, UPDATE_LAST_MESSAGE } from '../constants/events.js';
 import useSocketEvents from '../hooks/useSocketEvents.js';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useTypingIndicator } from '../hooks/useTypingIndicator.js';
@@ -42,6 +42,7 @@ function Chats() {
 
   const user = useAuthStore((state) => state.user);
   const contacts = useApiStore((state) => state.contacts);
+  const updateChat = useApiStore(state => state.updateChat)
   const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket, updateContactsList, fetchContact } = useApiStore();
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
 
@@ -117,6 +118,15 @@ function Chats() {
     [START_TYPING]: ({ chatId: typingChatId, userId, username }) => {
       if (typingChatId === currentSelectedChatId && userId !== user._id) {
         setTypingUsers(prev => new Map(prev).set(userId, username));
+      }
+    },
+    [GROUP_MEMBER_UPDATED]: (data) => {
+      console.log("triggered here")
+      updateChat(data)
+    },
+    [CHAT_CLEARED]: async ({ chatId }) => {
+      if (chatId == currentSelectedChatId) {
+        await fetchMessages(chatId); // learnnnnnnnnning *_*
       }
     },
     [STOP_TYPING]: ({ chatId: typingChatId, userId }) => {
