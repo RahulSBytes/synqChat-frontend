@@ -7,25 +7,22 @@ import { server } from './constants/config.js'
 import { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useAuthStore } from "./store/authStore.js";
-import AppLayout from "./components/layout/AppLayout.jsx";
 import AdminLayout from "./components/admin/AdminLayout.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
-import UsersList from "./components/UsersList.jsx";
-import MobileAppLayout from "./components/layout/MobileAppLayout.jsx";
 import ResponsiveLayout from "./components/layout/ResponsiveLayout.jsx";
+import GlobalSocketHandler from "./components/minicomponents/GlobalSocketHandler.jsx";
+import SocketHandler from "./components/minicomponents/SocketHandler.jsx";
 
 // Lazy-loaded pages
 // const Group = lazy(() => import("./components/Group"));
 const Signup = lazy(() => import("./components/Signup.jsx"));
 const Login = lazy(() => import("./components/layout/Login.jsx"));
 const NotFound = lazy(() => import("./components/NotFound"));
-const AdminLogin = lazy(() => import("./components/AdminLogin"));
 const Dashboard = lazy(() => import("./components/admin/Dashboard"));
 const UserManagement = lazy(() => import("./components/admin/UserManagement"));
 const ChatManagement = lazy(() => import("./components/admin/ChatManagement"));
 const MessagesManagement = lazy(() => import("./components/admin/MessagesManagement"));
 const Settings = lazy(() => import("./components/layout/Settings.jsx"));
-const Profile = lazy(() => import("./components/layout/Profile.jsx"));
 
 
 
@@ -37,7 +34,7 @@ const LazyWrapper = ({ children }) => (
   </Suspense>
 );
 
-
+ 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
@@ -45,17 +42,17 @@ const router = createBrowserRouter(
       <Route element={<ProtectRoute><ResponsiveLayout /></ProtectRoute>}>
         <Route index element={<Home />} />
         <Route path="chats/:id" element={<Chats />} />
-      </Route>
-      
+      </Route> 
+
       {/* Auth routes */}
       <Route path="/auth">
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
       </Route>
-      
+
       {/* Settings route */}
       <Route path="/settings" element={<ProtectRoute><Settings /></ProtectRoute>} />
-      
+
       {/* Admin routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
@@ -63,7 +60,7 @@ const router = createBrowserRouter(
         <Route path="messages" element={<MessagesManagement />} />
         <Route path="users" element={<UserManagement />} />
       </Route>
-      
+
       <Route path="*" element={<NotFound />} />
     </Route>
   )
@@ -73,8 +70,6 @@ const router = createBrowserRouter(
 
 function App() {
   const { userNotExists, userExists } = useAuthStore();
-// const {isMobile} = useResponsive();
-// console.log("screen width ::",isMobile);
 
 
   useEffect(() => {
@@ -87,6 +82,8 @@ function App() {
 
   return (
     <SocketProvider>
+       <SocketHandler />     
+       <GlobalSocketHandler />  {/* ✅ ADD THIS - Always active */}
       <RouterProvider router={router} />
       <Toaster position="bottom-center" />
     </SocketProvider>

@@ -1,7 +1,7 @@
 import { Menu, Search, X } from 'lucide-react'
 import Groupprof from './layout/Groupprof'
 import { useUIStore } from '../store/store.js'
-import { useNavigate, useOutletContext } from 'react-router-dom'
+import { useNavigate} from 'react-router-dom'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore.js'
@@ -18,8 +18,6 @@ function UsersList({ onlineUsers }) {
   const contacts = useApiStore((state) => state.contacts)
   const fetchContact = useApiStore((state) => state.fetchContact)
 
-  console.log("contacts ::",contacts)
-
   useEffect(() => {
     (
       async function () {
@@ -27,7 +25,7 @@ function UsersList({ onlineUsers }) {
         if (!success) toast.error("error fetching contact")
       }
     )()
-
+ 
   }, [])
 
   function handleSearch(string) {

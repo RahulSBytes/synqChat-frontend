@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EmojiPicker from 'emoji-picker-react';
-import { ArrowLeft, Clapperboard, Ellipsis, FileAudio, FileAudio2, FilePlay, FileText, Image, Paperclip, Send, SmilePlus, X } from 'lucide-react'
+import { ArrowLeft, Check, Clapperboard, Dot, DotIcon, Ellipsis, FileAudio, FileAudio2, FilePlay, FileText, Image, Paperclip, Send, SmilePlus, X } from 'lucide-react'
 import { useChatStore } from '../store/chatStore.js';
 import moment from 'moment'
 import { useAuthStore } from '../store/authStore.js';
@@ -9,13 +9,16 @@ import toast from 'react-hot-toast';
 import TypingIndicator from './minicomponents/TypingIndicator.jsx'
 import { useApiStore } from '../store/apiStore.js';
 import { getSocket } from '../context/SocketContext.jsx';
-import { CHAT_CLEARED, GROUP_MEMBER_UPDATED, MESSAGE_DELETED, NEW_CONTACT_ADDED, NEW_MESSAGE, REFETCH_CHATS, START_TYPING, STOP_TYPING, UPDATE_LAST_MESSAGE } from '../constants/events.js';
+import { CHAT_CLEARED, MESSAGE_DELETED, MESSAGE_DELIVERED, MESSAGE_READ, NEW_CONTACT_ADDED, NEW_MESSAGE, REFETCH_CHATS, START_TYPING, STOP_TYPING, UNREAD_COUNT_UPDATED, UPDATE_CHAT, UPDATE_LAST_MESSAGE } from '../constants/events.js';
 import useSocketEvents from '../hooks/useSocketEvents.js';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useTypingIndicator } from '../hooks/useTypingIndicator.js';
 import Profile from "./layout/Profile.jsx"
 import axios from 'axios';
 import { server } from '../constants/config.js';
+import MessageStatus from './minicomponents/MessageStatus.jsx';
+import { useAutoMarkRead } from '../hooks/useAutoMarkRead.js';
+import { useAutoMarkDelivered } from '../hooks/useAutoMarkDelivered.js';
 
 function Chats() {
   const { onlineUsers } = useOutletContext();
@@ -26,6 +29,7 @@ function Chats() {
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const [msg, setMsg] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const emojiButtonRef = useRef(null);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     messageId: null,
@@ -42,10 +46,16 @@ function Chats() {
 
   const user = useAuthStore((state) => state.user);
   const contacts = useApiStore((state) => state.contacts);
+  const updateMessageStatuses = useApiStore((state) => state.updateMessageStatuses);
+  const updateContactUnreadCount = useApiStore((state) => state.updateContactUnreadCount);
   const updateChat = useApiStore(state => state.updateChat)
   const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket, updateContactsList, fetchContact } = useApiStore();
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
+  // ✅ Auto-mark delivered when messages load
+  // useAutoMarkDelivered(currentSelectedChatId);
 
+  // ✅ Auto-mark read when chat is visible
+  useAutoMarkRead(currentSelectedChatId, true);
   const navigate = useNavigate();
   const socket = getSocket();
 
@@ -60,11 +70,15 @@ function Chats() {
   // ✅ All useEffect hooks (always called)
   useEffect(() => {
     function handleClickOutside(e) {
-      if (isEmojiOpen && emojiRef.current && !emojiRef.current.contains(e.target)) {
+      // ✅ Exclude button from "outside" check
+      if (
+        isEmojiOpen &&
+        emojiRef.current &&
+        !emojiRef.current.contains(e.target) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(e.target) // ✅ Key fix
+      ) {
         setIsEmojiOpen(false);
-      }
-      if (isAttachmentOpen && attachmentRef.current && !attachmentRef.current.contains(e.target)) {
-        setIsAttachmentOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -105,9 +119,66 @@ function Chats() {
   }, []);
 
   useSocketEvents(socket, {
-    [NEW_MESSAGE]: (data) => {
-      if (data.chat === currentSelectedChatId) addMessageFromSocket(data);
-    },
+   [NEW_MESSAGE]: async (data) => {
+
+    const isMyMessage = data.sender._id === user._id;
+    const isCurrentChat = data.chat === currentSelectedChatId;
+    
+
+    // ✅ 1. Mark as delivered (if not sent by me)
+    if (!isMyMessage) {
+      try {
+     const res =   await axios.put(
+          `${server}/api/v1/chats/delivered/${data.chat}`,
+          {},
+          { withCredentials: true }
+        );
+      } catch (err) {
+        console.error("Mark delivered error:", err);
+      }
+    }
+    
+    try {
+       // ✅ 2. Handle UI updates
+    if (isCurrentChat) {
+      // Add message to current chat
+      addMessageFromSocket(data);
+      
+      // Mark as read after short delay (if not my message)
+      if (!isMyMessage) {
+        setTimeout(() => {
+          axios.put(
+            `${server}/api/v1/chats/read/${data.chat}`,
+            {},
+            { withCredentials: true }
+          ).catch(err => console.error("Mark read error:", err));
+        }, 1000);
+      }
+    } 
+    } catch (error) {
+      console.log("errorroo socket handler ",error)
+    }
+   
+    // else {
+      // Message for different chat
+      // if (!isMyMessage) {
+      //   incrementUnreadCount(data.chat);
+      //   showNotification(data.sender.fullName, data.text);
+      // }
+    // }
+  },
+
+  [MESSAGE_DELIVERED]: ({ chatId, messageIds, deliveredBy }) => {
+    updateMessageStatuses(messageIds, "delivered");
+  },
+
+  [MESSAGE_READ]: ({ chatId, messageIds, readBy }) => {
+    updateMessageStatuses(messageIds, "read");
+  },
+
+  [UNREAD_COUNT_UPDATED]: ({ chatId, unreadCount }) => {
+    updateContactUnreadCount(chatId, unreadCount);
+  },
     [REFETCH_CHATS]: () => {
       fetchContact();
     },
@@ -119,10 +190,6 @@ function Chats() {
       if (typingChatId === currentSelectedChatId && userId !== user._id) {
         setTypingUsers(prev => new Map(prev).set(userId, username));
       }
-    },
-    [GROUP_MEMBER_UPDATED]: (data) => {
-      console.log("triggered here")
-      updateChat(data)
     },
     [CHAT_CLEARED]: async ({ chatId }) => {
       if (chatId == currentSelectedChatId) {
@@ -140,6 +207,9 @@ function Chats() {
     },
 
   });
+
+
+
 
   // ✅ Render loading state in JSX, not early return
   if (!chatInfo || !user) {
@@ -241,6 +311,8 @@ function Chats() {
     setMsg(prev => prev + emoji)
   }
 
+  const haveYouBlocked = !chatInfo.isBlocked
+
 
   return (
     <div className="flex-1 min-w-0 h-full flex flex-col relative">
@@ -268,7 +340,7 @@ function Chats() {
             <span className='font-semibold'>{fullName}</span>
             {!chatInfo.groupChat && (
               <span className='text-xs font-medium text-[#248f60]'>
-                {onlineUsers.includes(otherUserId) ? "Online" : "Offline"}
+                {!haveYouBlocked ? "Blocked" : onlineUsers.includes(otherUserId) ? "Online" : "Offline"}
               </span>
             )}
           </div>
@@ -300,7 +372,7 @@ function Chats() {
           <>
             <div className="flex flex-col gap-2">
               {messagesRelatedToChat.map((msg, index) => {
-                const { _id, sender, attachments, text, textDeletedFor = [], textDeletedForEveryone = false, createdAt } = msg;
+                const { _id, sender, attachments, text, textDeletedFor = [], textDeletedForEveryone = false, createdAt, status = '' } = msg;
 
                 if (textDeletedFor.includes(user._id) && attachments.every((el) => el.deletedFor.includes(user._id))) return null;
 
@@ -352,9 +424,10 @@ function Chats() {
                             )}
                           </div>
                         )}
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-gray-400 flex mt-1 items-center">
                           {moment(createdAt).format('hh:mm a')}
-                        </span>
+
+                          {sender._id === user._id && <> <DotIcon size={12} absoluteStrokeWidth /> <MessageStatus status={status} /> </>} </span>
 
                         {contextMenu.visible && contextMenu.messageId === _id && (
                           <div id="custom-context-menu" className="fixed z-50 bg-[#2a2a2a] text-white rounded-md shadow-lg"
@@ -363,7 +436,6 @@ function Chats() {
                               {["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🙏"].map(emoji => (
                                 <span key={emoji} className="cursor-pointer text-xl hover:scale-110"
                                   onClick={() => {
-                                    console.log("Reacted with", emoji);
                                     setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
                                   }}>
                                   {emoji}
@@ -378,7 +450,7 @@ function Chats() {
                                 }}>
                                 Delete for me
                               </button>
-                              {sender._id === user._id && (
+                              {haveYouBlocked && sender._id === user._id && (
                                 <button className="px-4 py-2 hover:bg-[#689969] text-left"
                                   onClick={() => {
                                     handleDeleteMessage(contextMenu.messageId, contextMenu.data, isDeleteForEveryone = true);
@@ -413,7 +485,7 @@ function Chats() {
       </div>
 
       {/* INPUT SECTION */}
-      <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700'>
+      {haveYouBlocked && <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700'>
         {isEmojiOpen && (
           <div ref={emojiRef} className="absolute bottom-full left-0 w-full z-20">
             <EmojiPicker onEmojiClick={onEmojiSelect} height={200} width='100%' theme='dark'
@@ -444,7 +516,11 @@ function Chats() {
             )}
             <Paperclip onClick={() => setIsAttachmentOpen(prev => !prev)} size={18} />
           </div>
-          <span onClick={() => setIsEmojiOpen(prev => !prev)} className='p-2 rounded-full hover:bg-[#313131] mr-2 cursor-pointer'>
+          <span
+            ref={emojiButtonRef}
+            onClick={() => setIsEmojiOpen((prev) => !prev)}
+            className="p-2 rounded-full hover:bg-[#313131] mr-2 cursor-pointer"
+          >
             <SmilePlus size={18} />
           </span>
           <div className='flex items-center flex-1 flex-col'>
@@ -496,7 +572,7 @@ function Chats() {
             </div>
           </div>
         </form>
-      </div>
+      </div>}
     </div>
   )
 }

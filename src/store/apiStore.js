@@ -5,7 +5,8 @@ import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
 
 export const useApiStore = create(
-  persist((set, get) => ({
+  // persist(
+    (set, get) => ({
     messagesRelatedToChat: [],
 
     fetchMessages: async (currentSelectedChatId) => {
@@ -20,7 +21,6 @@ export const useApiStore = create(
     },
 
     updateMessageDeletionFromSocket: (data) => {
-      console.log("updateMessageDeletionFromSocket ::", data);
       set((state) => ({
         messagesRelatedToChat: state.messagesRelatedToChat.map((msg) => {
           console.log(msg._id === data._id, msg._id, data._id);
@@ -41,8 +41,6 @@ export const useApiStore = create(
       const [data, error] = await apiRequest(
         axios.get(`${server}/api/v1/chats`, { withCredentials: true })
       );
-
-      // console.log("fetchContact ::",data)
       if (error) return false;
       set({ contacts: data.chats });
       return true;
@@ -65,13 +63,28 @@ export const useApiStore = create(
     },
 
     updateChat: (updatedChat) => {
-      console.log("updatedChat :: ", updatedChat);
       set((state) => ({
         contacts: state.contacts.map((chat) =>
           chat._id === updatedChat._id ? { ...chat, ...updatedChat } : chat
         ),
       }));
     },
+
+    updateContactUnreadCount: (chatId, unreadCount) => {
+      set((state) => ({
+        contacts: state.contacts.map((contact) =>
+          contact._id === chatId ? { ...contact, unreadCount } : contact
+        ),
+      }));
+    },
+
+   updateMessageStatuses: (messageIds, status) => {
+    set((state) => ({
+      messagesRelatedToChat: state.messagesRelatedToChat.map((msg) =>
+        messageIds.includes(msg._id) ? { ...msg, status } : msg
+      ),
+    }));
+  },
 
     removeMemberFromGroup: async (chatId, memberId) => {
       const [data, error] = await apiRequest(
@@ -172,7 +185,7 @@ export const useApiStore = create(
         )
       );
 
-      console.log("leaveGroup::",data, error)
+      console.log("leaveGroup::", data, error);
       return error ? false : true;
     },
 
@@ -262,4 +275,4 @@ export const useApiStore = create(
     //     withCredentials: true,
     //   }),
   }))
-);
+// );
