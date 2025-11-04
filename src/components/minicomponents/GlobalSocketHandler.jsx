@@ -58,6 +58,9 @@ function GlobalSocketHandler() {
     updateMessageDeletionFromSocket,
     updateContactsList,
     fetchContact,
+    incrementUnreadCount,  
+    setUnreadCount,  
+    resetUnreadCount,  
     updateChat,
   } = useApiStore();
 
@@ -94,8 +97,10 @@ function GlobalSocketHandler() {
           }, 1000);
         }
       } else {
-        // Message for different chat
-        // You can add incrementUnreadCount here if you have it in your store
+        // ✅ Message for different chat - increment unread
+        if (!isMyMessage) {
+          incrementUnreadCount(data.chat);
+        }
       }
     },
 
@@ -107,8 +112,14 @@ function GlobalSocketHandler() {
       updateMessageStatuses(messageIds, "read");
     },
 
-    [UNREAD_COUNT_UPDATED]: ({ chatId, unreadCount }) => {
-      updateContactUnreadCount(chatId, unreadCount);
+  [UNREAD_COUNT_UPDATED]: ({ chatId, unreadCount, increment }) => {
+      console.log("🔢 UNREAD_COUNT_UPDATED:", { chatId, unreadCount, increment });
+      
+      if (increment) {
+        incrementUnreadCount(chatId);
+      } else {
+        setUnreadCount(chatId, unreadCount);
+      }
     },
 
     [REFETCH_CHATS]: () => {

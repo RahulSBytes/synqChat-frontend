@@ -5,8 +5,7 @@ import { apiRequest } from "../helpers/helpers.js";
 import { persist } from "zustand/middleware";
 
 export const useApiStore = create(
-  // persist(
-    (set, get) => ({
+  persist((set, get) => ({
     messagesRelatedToChat: [],
 
     fetchMessages: async (currentSelectedChatId) => {
@@ -36,6 +35,62 @@ export const useApiStore = create(
     },
 
     contacts: [],
+
+    // ######## count related methods
+
+    unreadCounts: {}, // ✅ ADD THIS - { chatId: count }
+    totalUnread: 0, // ✅ ADD THIS
+
+    // ✅ ADD: Set unread counts
+    setUnreadCounts: (unreadCounts, totalUnread) => {
+      set({ unreadCounts, totalUnread });
+    },
+
+    // ✅ ADD: Update single chat's unread count
+    setUnreadCount: (chatId, count) => {
+      set((state) => {
+        const newCounts = { ...state.unreadCounts, [chatId]: count };
+        const total = Object.values(newCounts).reduce((sum, c) => sum + c, 0);
+
+        return {
+          unreadCounts: newCounts,
+          totalUnread: total,
+        };
+      });
+    },
+
+    // ✅ ADD: Increment unread count
+    incrementUnreadCount: (chatId) => {
+      set((state) => {
+        const currentCount = state.unreadCounts[chatId] || 0;
+        const newCount = currentCount + 1;
+
+        return {
+          unreadCounts: {
+            ...state.unreadCounts,
+            [chatId]: newCount,
+          },
+          totalUnread: state.totalUnread + 1,
+        };
+      });
+    },
+
+    // ✅ ADD: Reset unread count
+    resetUnreadCount: (chatId) => {
+      set((state) => {
+        const oldCount = state.unreadCounts[chatId] || 0;
+
+        return {
+          unreadCounts: {
+            ...state.unreadCounts,
+            [chatId]: 0,
+          },
+          totalUnread: Math.max(0, state.totalUnread - oldCount),
+        };
+      });
+    },
+
+    // ######## count related methods
 
     fetchContact: async () => {
       const [data, error] = await apiRequest(
@@ -78,13 +133,13 @@ export const useApiStore = create(
       }));
     },
 
-   updateMessageStatuses: (messageIds, status) => {
-    set((state) => ({
-      messagesRelatedToChat: state.messagesRelatedToChat.map((msg) =>
-        messageIds.includes(msg._id) ? { ...msg, status } : msg
-      ),
-    }));
-  },
+    updateMessageStatuses: (messageIds, status) => {
+      set((state) => ({
+        messagesRelatedToChat: state.messagesRelatedToChat.map((msg) =>
+          messageIds.includes(msg._id) ? { ...msg, status } : msg
+        ),
+      }));
+    },
 
     removeMemberFromGroup: async (chatId, memberId) => {
       const [data, error] = await apiRequest(
@@ -275,4 +330,4 @@ export const useApiStore = create(
     //     withCredentials: true,
     //   }),
   }))
-// );
+);

@@ -45,11 +45,23 @@ function Chats() {
   const chatContainerRef = useRef(null);
 
   const user = useAuthStore((state) => state.user);
-  const contacts = useApiStore((state) => state.contacts);
-  const updateMessageStatuses = useApiStore((state) => state.updateMessageStatuses);
-  const updateContactUnreadCount = useApiStore((state) => state.updateContactUnreadCount);
-  const updateChat = useApiStore(state => state.updateChat)
-  const { fetchMessages, addMessageFromSocket, sendMessage, messagesRelatedToChat, updateMessageDeletionFromSocket, updateContactsList, fetchContact } = useApiStore();
+  const {
+    cancelUpload,
+    isSendingMessage,
+    progress,
+    contacts,
+    updateChat,
+    resetUnreadCount,
+    updateContactUnreadCount,
+    updateMessageStatuses,
+    fetchMessages,
+    addMessageFromSocket,
+    sendMessage,
+    messagesRelatedToChat,
+    updateMessageDeletionFromSocket,
+    updateContactsList,
+    fetchContact
+  } = useApiStore();
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
   // ✅ Auto-mark delivered when messages load
   // useAutoMarkDelivered(currentSelectedChatId);
@@ -118,67 +130,76 @@ function Chats() {
     return () => document.removeEventListener("click", closeMenu);
   }, []);
 
-  useSocketEvents(socket, {
-   [NEW_MESSAGE]: async (data) => {
 
-    const isMyMessage = data.sender._id === user._id;
-    const isCurrentChat = data.chat === currentSelectedChatId;
-    
 
-    // ✅ 1. Mark as delivered (if not sent by me)
-    if (!isMyMessage) {
-      try {
-     const res =   await axios.put(
-          `${server}/api/v1/chats/delivered/${data.chat}`,
-          {},
-          { withCredentials: true }
-        );
-      } catch (err) {
-        console.error("Mark delivered error:", err);
-      }
+  useEffect(() => {
+    if (currentSelectedChatId) {
+      resetUnreadCount(currentSelectedChatId);
     }
-    
-    try {
-       // ✅ 2. Handle UI updates
-    if (isCurrentChat) {
-      // Add message to current chat
-      addMessageFromSocket(data);
-      
-      // Mark as read after short delay (if not my message)
+  }, [currentSelectedChatId, resetUnreadCount]);
+
+
+  useSocketEvents(socket, {
+    [NEW_MESSAGE]: async (data) => {
+
+      const isMyMessage = data.sender._id === user._id;
+      const isCurrentChat = data.chat === currentSelectedChatId;
+
+
+      // ✅ 1. Mark as delivered (if not sent by me)
       if (!isMyMessage) {
-        setTimeout(() => {
-          axios.put(
-            `${server}/api/v1/chats/read/${data.chat}`,
+        try {
+          const res = await axios.put(
+            `${server}/api/v1/chats/delivered/${data.chat}`,
             {},
             { withCredentials: true }
-          ).catch(err => console.error("Mark read error:", err));
-        }, 1000);
+          );
+        } catch (err) {
+          console.error("Mark delivered error:", err);
+        }
       }
-    } 
-    } catch (error) {
-      console.log("errorroo socket handler ",error)
-    }
-   
-    // else {
+
+      try {
+        // ✅ 2. Handle UI updates
+        if (isCurrentChat) {
+          // Add message to current chat
+          addMessageFromSocket(data);
+
+          // Mark as read after short delay (if not my message)
+          if (!isMyMessage) {
+            setTimeout(() => {
+              axios.put(
+                `${server}/api/v1/chats/read/${data.chat}`,
+                {},
+                { withCredentials: true }
+              ).catch(err => console.error("Mark read error:", err));
+            }, 1000);
+          }
+        }
+      } catch (error) {
+        console.log("errorroo socket handler ", error)
+      }
+
+      // else {
       // Message for different chat
       // if (!isMyMessage) {
       //   incrementUnreadCount(data.chat);
       //   showNotification(data.sender.fullName, data.text);
       // }
-    // }
-  },
+      // }
+    },
 
-  [MESSAGE_DELIVERED]: ({ chatId, messageIds, deliveredBy }) => {
-    updateMessageStatuses(messageIds, "delivered");
-  },
+    [MESSAGE_DELIVERED]: ({ chatId, messageIds, deliveredBy }) => {
+      updateMessageStatuses(messageIds, "delivered");
+    },
 
-  [MESSAGE_READ]: ({ chatId, messageIds, readBy }) => {
-    updateMessageStatuses(messageIds, "read");
-  },
+    [MESSAGE_READ]: ({ chatId, messageIds, readBy }) => {
+      updateMessageStatuses(messageIds, "read");
+    },
 
-  [UNREAD_COUNT_UPDATED]: ({ chatId, unreadCount }) => {
-    updateContactUnreadCount(chatId, unreadCount);
-  },
+    [UNREAD_COUNT_UPDATED]: ({ chatId, unreadCount }) => {
+      updateContactUnreadCount(chatId, unreadCount);
+    },
     [REFETCH_CHATS]: () => {
       fetchContact();
     },
@@ -314,59 +335,61 @@ function Chats() {
   const haveYouBlocked = !chatInfo.isBlocked
 
 
+
+
   return (
     <div className="flex-1 min-w-0 h-full flex flex-col relative">
       {/* HEADER */}
-      <div className='sticky bg-[#242424] top-0 z-10 flex justify-between items-center p-3 border-b border-gray-700'>
+      <div className='sticky bg-surface dark:bg-surface-dark top-0 z-10 flex justify-between items-center p-3 border-b border-placeholder-txt/30'>
         <div className='flex items-center w-full '>
           <button onClick={() => navigate('/')} className="mr-2 text-white hover:bg-gray-700 rounded md:hidden">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          {chatInfo.groupChat ? (
-            <div className="mr-2 flex-col p-2 w-8 h-8 gap-1 flex bg-zinc-500 rounded-full justify-center items-center">
-              <div className="flex gap-1">
-                <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-                <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-              </div>
-              <div className="flex gap-1">
-                <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-                <div className="h-[6px] w-[6px] bg-zinc-800 rounded-sm"></div>
-              </div>
-            </div>
-          ) : (
-            <img src={avatar.url} className='h-10 w-10 rounded-full mr-2 border-2 border-zinc-600' />
-          )}
+
+          <img src={chatInfo.groupChat ? chatInfo.avatar.url || '../../public/image.png' : avatar.url || '../../public/unknown.jpg'} className='h-10 w-10 rounded-full mr-2 ' />
+          {/* )} */}
           <div className='flex flex-col'>
-            <span className='font-semibold'>{fullName}</span>
-            {!chatInfo.groupChat && (
-              <span className='text-xs font-medium text-[#248f60]'>
+            <span className='font-semibold text-lg text-primary dark:text-primary-dark'>{chatInfo.name || fullName}</span>
+            {chatInfo.groupChat ? (
+              <span className='text-xs font-medium text-muted dark:text-muted-dark'>
+                {chatInfo.members.length} members
+              </span>
+            )
+              :
+              <span className='text-xs font-medium text-accent'>
                 {!haveYouBlocked ? "Blocked" : onlineUsers.includes(otherUserId) ? "Online" : "Offline"}
               </span>
-            )}
+            }
           </div>
         </div>
 
-        <div className='md:hidden'>
-          <label htmlFor="my-drawer-4" className="drawer-button md:hidden">
-            <Ellipsis />
-          </label>
-          <div className="drawer drawer-end flex justify-end w-6">
-            <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-            <div className="drawer-side">
-              <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-              <ul className="menu bg-[#313131] text-base-content h-full py-4 w-full">
-                <label htmlFor="my-drawer-4" className="drawer-button self-end mt-6 mx-4">
-                  <X strokeWidth={2} />
-                </label>
-                <Profile mobileStyle={'h-full w-full'} />
-              </ul>
-            </div>
+
+        {/* sidebarrr */}
+
+        <div className="drawer drawer-end lg:hidden w-min mr-10">
+          <input id="my-drawer-5" type="checkbox" className="drawer-toggle" />
+          <div className="drawer-content">
+            <label htmlFor="my-drawer-5" className="drawer-button"><Ellipsis /></label>
+          </div>
+          <div className="drawer-side">
+            <label htmlFor="my-drawer-5" aria-label="close sidebar" className="drawer-overlay"></label>
+            <ul className="menu bg-base-200 min-h-full w-80 p-4">
+              <label htmlFor="my-drawer-5" className="drawer-button"><X /></label>
+              <Profile />
+            </ul>
           </div>
         </div>
+
+
+        {/* sidebarrr */}
+
+
       </div>
 
+
+
       {/* MESSAGES SECTION */}
-      <div ref={chatContainerRef} className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#222] px-6 py-4 flex flex-col'>
+      <div ref={chatContainerRef} className='flex-1 overflow-y-auto bg-surface dark:bg-surface-dark scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent px-6 py-4 flex flex-col'>
 
         {messagesRelatedToChat.length > 0 ? (
           <>
@@ -383,7 +406,7 @@ function Chats() {
                 return (
                   <div key={_id}>
                     {isDateTransition && (
-                      <div className="text-center text-xs my-2 text-gray-500">
+                      <div className="text-center text-xs my-2 text-zinc-400">
                         {moment(createdAt).calendar(null, {
                           sameDay: '[Today]',
                           lastDay: '[Yesterday]',
@@ -394,13 +417,13 @@ function Chats() {
                     )}
 
                     <div className={`chat ${sender._id === user._id ? 'chat-end' : 'chat-start'}`}>
-                      {sender._id !== user._id && (
+                      {/* {sender._id !== user._id && (
                         <div className="chat-image avatar">
                           <div className="w-8 rounded-full">
                             <img src="/image.png" alt="User avatar" />
                           </div>
                         </div>
-                      )}
+                      )} */}
                       <div className={`w-full rounded-t-lg flex gap-1 flex-col ${sender._id === user._id ? 'items-end' : 'items-start'}`}>
 
                         {attachments.length > 0 && (
@@ -414,17 +437,17 @@ function Chats() {
 
                           >
                             {textDeletedForEveryone ? (
-                              <span className="text-xs italic text-gray-400 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
+                              <span className="text-xs italic text-zinc-500 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
                             ) : (
-                              <span className={`whitespace-pre-wrap break-words max-w-[70%] py-2 px-3 rounded-t-md ${sender._id === user._id
-                                ? ' bg-[#353535] rounded-l-lg '
-                                : 'bg-[#689969] rounded-r-lg'
+                              <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3 rounded-full font-sans ${sender._id === user._id
+                                ? ' bg-message-sent-bg '
+                                : 'bg-me bg-message-received-bg'
                                 }`}
                                 onContextMenu={(e) => handleContextMenu(_id, { type: 'text', text }, e)} >{text}</span>
                             )}
                           </div>
                         )}
-                        <span className="text-[10px] text-gray-400 flex mt-1 items-center">
+                        <span className="text-[10px] text-zinc-400 flex mt-1 items-center">
                           {moment(createdAt).format('hh:mm a')}
 
                           {sender._id === user._id && <> <DotIcon size={12} absoluteStrokeWidth /> <MessageStatus status={status} /> </>} </span>
@@ -485,7 +508,7 @@ function Chats() {
       </div>
 
       {/* INPUT SECTION */}
-      {haveYouBlocked && <div className='sticky bottom-0 bg-[#242424] pt-2 pb-4 px-3 w-full border-t border-gray-700'>
+      {haveYouBlocked && <div className='sticky bottom-0 bg-surface dark:bg-surface-dark pt-2 pb-4 px-3 w-full border-t border-placeholder-txt'>
         {isEmojiOpen && (
           <div ref={emojiRef} className="absolute bottom-full left-0 w-full z-20">
             <EmojiPicker onEmojiClick={onEmojiSelect} height={200} width='100%' theme='dark'
@@ -514,14 +537,14 @@ function Chats() {
                 </span>
               </div>
             )}
-            <Paperclip onClick={() => setIsAttachmentOpen(prev => !prev)} size={18} />
+            <Paperclip onClick={() => setIsAttachmentOpen(prev => !prev)} size={18} className='text-muted dark:text-muted-dark' />
           </div>
           <span
             ref={emojiButtonRef}
             onClick={() => setIsEmojiOpen((prev) => !prev)}
             className="p-2 rounded-full hover:bg-[#313131] mr-2 cursor-pointer"
           >
-            <SmilePlus size={18} />
+            <SmilePlus size={18} className='text-muted dark:text-muted-dark' />
           </span>
           <div className='flex items-center flex-1 flex-col'>
             {selectedFiles.length > 0 && (
@@ -536,6 +559,7 @@ function Chats() {
                   </button>
                 </div>
                 <div className='flex flex-col gap-1 max-h-32 overflow-y-scroll scrollbar-thin scrollbar-thumb-[#444]'>
+
                   {selectedFiles.map((file, index) => (
                     <div key={`${file.name}-${index}`} className='flex items-center justify-between bg-[#484848] px-2 py-1 rounded'>
                       <div className='flex items-center flex-1 min-w-0'>
@@ -560,11 +584,10 @@ function Chats() {
             )}
             <div className='flex items-center w-full'>
               <textarea onInput={autoResize} value={msg} onChange={handleInputChange}
-                className="w-full resize-none rounded-3xl px-4 outline-none min-h-[35px] max-h-[112px] py-2 overflow-y-auto bg-[#353535] text-white"
+                className="w-full resize-none rounded-3xl px-4 outline-none min-h-[35px] max-h-[112px] py-2 overflow-y-auto bg-searchbar dark:bg-searchbar-dark text-primary dark:text-primary-dark"
                 placeholder={selectedFiles.length > 0 ? `Send ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} with message...` : "Type a message..."} rows={1} />
-              <button type="button" onClick={handleSendMsg}
-                className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'
-                disabled={!msg.trim() && selectedFiles.length === 0}>
+              <button disabled={isSendingMessage || (!msg.trim() && selectedFiles.length === 0)} type="button" onClick={handleSendMsg}
+                className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'>
                 {sending ?
                   <span className="loading loading-spinner text-[#909090]"></span> :
                   <Send size={20} color={(!msg.trim() && selectedFiles.length === 0) ? '#666' : '#248f60'} />}

@@ -22,9 +22,14 @@ const Dashboard = lazy(() => import("./components/admin/Dashboard"));
 const UserManagement = lazy(() => import("./components/admin/UserManagement"));
 const ChatManagement = lazy(() => import("./components/admin/ChatManagement"));
 const MessagesManagement = lazy(() => import("./components/admin/MessagesManagement"));
-const Settings = lazy(() => import("./components/layout/Settings.jsx"));
+const Settings = lazy(() => import("./components/settings/Settings.jsx"));
 
 
+// Lazy-loaded settings tabs
+const ProfileTab = lazy(() => import("./components/settings/tabs/ProfileTab"));
+const AppearanceTab = lazy(() => import("./components/settings/tabs/AppearanceTab"));
+const PrivacyTab = lazy(() => import("./components/settings/tabs/PrivacyTab"));
+const GeneralTab = lazy(() => import("./components/settings/tabs/GeneralTab"));
 
 
 // Helper component to wrap lazy components with Suspense
@@ -34,7 +39,7 @@ const LazyWrapper = ({ children }) => (
   </Suspense>
 );
 
- 
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
@@ -42,7 +47,15 @@ const router = createBrowserRouter(
       <Route element={<ProtectRoute><ResponsiveLayout /></ProtectRoute>}>
         <Route index element={<Home />} />
         <Route path="chats/:id" element={<Chats />} />
-      </Route> 
+      </Route>
+
+      <Route path="/settings" element={<Settings />}>
+        <Route index element={<ProfileTab />} />
+        <Route path="profile" element={<ProfileTab />} />
+        <Route path="appearance" element={<AppearanceTab />} />
+        <Route path="privacy" element={<PrivacyTab />} />
+        <Route path="general" element={<GeneralTab />} />
+      </Route>
 
       {/* Auth routes */}
       <Route path="/auth">
@@ -51,7 +64,6 @@ const router = createBrowserRouter(
       </Route>
 
       {/* Settings route */}
-      <Route path="/settings" element={<ProtectRoute><Settings /></ProtectRoute>} />
 
       {/* Admin routes */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -82,8 +94,8 @@ function App() {
 
   return (
     <SocketProvider>
-       <SocketHandler />     
-       <GlobalSocketHandler />  {/* ✅ ADD THIS - Always active */}
+      <SocketHandler />
+      <GlobalSocketHandler />  {/* ✅ ADD THIS - Always active */}
       <RouterProvider router={router} />
       <Toaster position="bottom-center" />
     </SocketProvider>

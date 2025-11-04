@@ -1,5 +1,5 @@
 // profile.js
-import { ArrowUpRight, Clapperboard, FileAudio, FileMinus, Image, PencilLine } from 'lucide-react'
+import { ArrowUpRight, ChevronRight, Clapperboard,  FileMinus, Headphones, Image, PencilLine, Play } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore.js';
 import { useChatStore } from '../../store/chatStore.js';
 import { useMemo, useState } from 'react'
@@ -61,14 +61,14 @@ function Details({ mobileStyle }) {
         {
             label: "Videos",
             count: categorized.video.length,
-            icon: Clapperboard,
+            icon: Play,
             files: categorized.video,
             key: 'videos'
         },
         {
             label: "Audios",
             count: categorized.audio.length,
-            icon: FileAudio,
+            icon: Headphones,
             files: categorized.audio,
             key: 'audios'
         },
@@ -158,7 +158,7 @@ function Details({ mobileStyle }) {
     const openOwnerShipTransferWindow = selectedChatInfo.groupChat && (selectedChatInfo.creator._id == user._id) && grpOwnerWin
 
     return (
-        <aside className={`lg:flex bg-[#242424] flex-col px-6 py-8 min-h-0 overflow-hidden ${mobileStyle} flex-1 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]`}>
+        <aside className={`lg:flex bg-base dark:bg-base-dark flex-col px-6 py-8 min-h-0 overflow-hidden ${mobileStyle} flex-1 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#444]`}>
             {isViewMembersClicked && <ViewMembers selectedChatInfo={selectedChatInfo} setIsViewMembersClicked={setIsViewMembersClicked} />}
             {openOwnerShipTransferWindow && <TransferGroupOwnershipWin handleOwnerChange={handleOwnerChange} selectedChatInfo={selectedChatInfo} setGrpOwnerWin={setGrpOwnerWin} />}
             <div className="flex flex-col min-h-0 flex-1">
@@ -168,14 +168,17 @@ function Details({ mobileStyle }) {
                     <div className=' flex gap-4 flex-col py-4'>
                         {/* Profile Section - Fixed height */}
                         <div className='w-full flex flex-col items-center flex-shrink-0'>
+                            <div className='relative'>
                             <img
-                                className="h-16 w-16 rounded-full object-cover border border-[#323232]"
+                                className="h-20 w-20 rounded-full object-cover border"
                                 src={selectedChatInfo.avatar?.url || '../../../public/image.png'}
                                 alt="Group avatar"
                             /> 
-                            <h4 className='font-semibold text-lg mt-2'>{selectedChatInfo.name}</h4>
-                            <p className='cursor-pointer text-center text-zinc-400 text-sm font-handwriting flex gap-1 items-center' onClick={() => setIsViewMembersClicked(prev => !prev)}>{selectedChatInfo.members.length} members <PencilLine size={14} /></p>
-                            <p className='text-center text-xs text-zinc-300 font-handwriting line-clamp-2'>{selectedChatInfo.bio || selectedChatInfo.description}</p>
+                  <span className=' absolute right-1 bottom-0 rounded-full w-5 h-5 font-semibold text-primary flex justify-center items-center bg-[#B1B1B1]'>#</span>
+                            </div>
+                            <h4 className='font-semibold text-lg mt-2 text-primary dark:text-primary-dark'>{selectedChatInfo.name}</h4>
+                            <p className='cursor-pointer text-center text-sm font-handwriting flex gap-1 items-center text-secondary dark:text-secondary-dark' onClick={() => setIsViewMembersClicked(prev => !prev)}>{selectedChatInfo.members.length} members <PencilLine size={14} /></p>
+                            <p className='text-center text-xs font-handwriting line-clamp-2 text-muted dark:text-muted-dark'>{selectedChatInfo.description}</p>
                         </div>
                     </div>
                 ) : (
@@ -187,14 +190,13 @@ function Details({ mobileStyle }) {
                                 className='h-14 w-14 rounded-full object-cover border border-[#323232]'
                                 alt={`${info.fullName} avatar`}
                             />
-                            <h4 className='font-semibold text-lg'>{info.fullName}</h4>
-                            <p className='text-center text-sm font-handwriting text-zinc-400 '>@{info.username}</p>
+                            <h4 className='font-semibold text-lg text-primary dark:text-primary-dark'>{info.fullName}</h4>
+                            <p className='text-center text-sm font-handwriting text-secondary dark:text-secondary-dark'>@{info.username}</p>
                             <p className='text-center font-handwriting text-xs text-zinc-300'>{info.bio}</p>
                         </div>
                     )
                 )}
 
-                <hr />
                 <div className="flex flex-col mt-4 gap-6 flex-shrink-0">
                     <div>
                         <h4 className='pb-2'>Shared files</h4>
@@ -203,16 +205,16 @@ function Details({ mobileStyle }) {
                                 <div key={el.key}>
                                     <div
                                         onClick={() => toggleFileType(el.key)}
-                                        className='flex justify-between hover:bg-[#313131] cursor-pointer items-center p-1 py-2 pr-3'
+                                        className='flex justify-between hover:bg-surface dark:hover:bg-surface-dark cursor-pointer items-center p-1 py-2 pr-3'
                                     >
                                         <div className='flex gap-1 items-center text-sm'>
-                                            <el.icon />
+                                            <el.icon className='text-accent mr-1'/>
                                             <div className='flex flex-col'>
-                                                <span className='text-sm text-zinc-100'>{el.label}</span>
-                                                <span className='text-[10px] font-handwriting text-zinc-400'>{el.count} files</span>
+                                                <span className='text-sm text-primary dark:text-primary-dark'>{el.label}</span>
+                                                <span className='text-[10px] font-handwriting text-muted dark:text-muted-dark'>{el.count} files</span>
                                             </div>
                                         </div>
-                                        <ArrowUpRight size={16} color='#5dbb63' />
+                                        <ChevronRight size={21} className='text-accent' />
                                     </div>
 
                                     {expandedFileTypes[el.key] && (
@@ -224,11 +226,11 @@ function Details({ mobileStyle }) {
                                 </div>
                             ))}
                         </div>
-                        <div className='flex flex-col items-start mt-2'>
-                            <button className='text-sm mb-1' onClick={() => handleClearMessages(selectedChatInfo._id)}> Clear all messages </button>
+                        <div className='flex flex-col gap-1 items-start mt-4'>
+                            <button className='text-sm mb-1 text-secondary dark:text-secondary-dark' onClick={() => handleClearMessages(selectedChatInfo._id)}> Clear all messages </button>
                             {
-                                selectedChatInfo.groupChat ? <button className='text-sm text-red-400 hover:text-red-300' onClick={() => selectedChatInfo.creator._id == user._id ? setGrpOwnerWin(prev => !prev) : handleOwnerChange()}> leave this group </button>
-                                    : selectedChatInfo.isBlocked ? <button onClick={() => handleUnblock(selectedChatInfo._id)} className='text-sm text-red-400 hover:text-red-300'>Unblock this contact </button> : <button onClick={() => handleBlock(selectedChatInfo._id)} className='text-sm text-red-400 hover:text-red-300'>Block this contact </button>
+                                selectedChatInfo.groupChat ? <button className='text-sm text-error hover:text-error-light' onClick={() => selectedChatInfo.creator._id == user._id ? setGrpOwnerWin(prev => !prev) : handleOwnerChange()}> Leave this group </button>
+                                    : selectedChatInfo.isBlocked ? <button onClick={() => handleUnblock(selectedChatInfo._id)} className='text-sm text-green-600 hover:text-green-400'>Unblock this contact </button> : <button onClick={() => handleBlock(selectedChatInfo._id)} className='text-sm text-error hover:text-error-light'>Block this contact </button>
                             }
                         </div>
                     </div>

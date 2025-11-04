@@ -54,15 +54,15 @@ const FindDialog = () => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#3B3B3B] w-full max-w-md rounded-lg shadow-lg px-12 py-8 pb-10 relative">
+      <div className="bg-surface dark:bg-surface-dark w-full max-w-md rounded-lg shadow-lg px-12 py-8 pb-10 relative">
         <X
           onClick={setIsSearchPeopleClicked}
-          className="absolute top-6 right-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+          className="absolute top-6 right-6 text-muted dark:text-muted-dark cursor-pointer"
           size={20}
           strokeWidth={3}
           color="#c1c1c1"
         />
-        <h2 className="text-xl font-semibold mb-6 text-center">
+        <h2 className="text-xl font-semibold mb-6 text-center text-primary dark:text-primary-dark">
           Find People On <span className="font-bold text-[#248F60]">SynqChat</span>
         </h2>
 
@@ -73,11 +73,11 @@ const FindDialog = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               type="text"
               placeholder="Enter Username or Email"
-              className="w-full rounded border border-gray-300 px-3 py-1 outline-none"
+              className="w-full rounded  bg-searchbar dark:bg-searchbar-dark text-secondary dark:text-secondary-dark px-3 py-1 outline-none"
             />
           </form>
 
-          {isLoading && <div className="text-center text-gray-400">Searching...</div>}
+          {isLoading && <div className="text-center text-secondary dark:text-secondary-dark">Searching...</div>}
 
           {!isLoading && searchQuery.trim() && (
             <>
@@ -116,7 +116,7 @@ const FindDialog = () => {
           )}
 
           {!searchQuery.trim() && (
-            <p className="text-center text-gray-400">Start typing to search for users</p>
+            <p className="text-center text-muted dark:text-muted-dark mt-4">Start typing to search for users</p>
           )}
         </div>
       </div>

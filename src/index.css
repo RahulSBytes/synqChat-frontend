@@ -86,3 +86,13 @@ html{
 }
 
 /* typing indicator */
+
+
+.noScrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.noScrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

@@ -1,11 +1,19 @@
 // chatStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { NEW_MESSAGE_ALERT } from "../constants/events";
 
 export const useChatStore = create(
   persist(
     (set, get) => ({
+      // theme related
+      darkMode: true,
+
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+
+      setDarkMode: (value) => set({ darkMode: value }),
+
+      // theme related
+
       notificationCount: 0,
 
       // onlineUsers : [],
@@ -54,8 +62,9 @@ export const useChatStore = create(
         })),
     }),
     {
-      name: "chat-storage", 
+      name: "chat-storage",
       partialize: (state) => ({
+        darkMode: state.darkMode,
         currentSelectedChatId: state.currentSelectedChatId,
       }),
     }

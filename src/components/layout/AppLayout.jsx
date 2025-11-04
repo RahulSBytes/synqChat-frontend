@@ -50,6 +50,8 @@ const isHomePage = location.pathname === '/';
         isNotificationClicked && <Notification />
       }
 
+      
+
       <Navbar />
       {/* User List */}
       <div className="hidden md:flex w-[300px] bg-[#353535] h-full">

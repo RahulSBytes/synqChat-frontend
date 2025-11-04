@@ -295,13 +295,13 @@ function ShowProfileAttachmentList({ files, onClose }) {
         <>
             {/* Main popup */}
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-                <div className="bg-[#2a2a2a] rounded-lg max-w-md w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+                <div className="bg-surface dark:bg-surface-dark rounded-lg max-w-md w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
                     {/* Header with close button */}
                     <div className="flex justify-between items-center p-4 border-b border-gray-600">
-                        <h3 className="text-lg font-semibold text-white">Attachments ({files.length})</h3>
+                        <h3 className="text-lg font-semibold text-muted dark:text-muted-dark">Attachments ({files.length})</h3>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-white transition-colors"
+                            className="text-secondary dark:text-secondary-dark transition-colors"
                         >
                             <X size={24} />
                         </button>
@@ -310,14 +310,14 @@ function ShowProfileAttachmentList({ files, onClose }) {
                     {/* Files list - scrollable */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-2">
                         {files.length === 0 ? (
-                            <div className="text-center text-gray-400 py-8">
+                            <div className="text-center text-placeholder-txt py-8">
                                 No files available
                             </div>
                         ) :
                             files.map((file, index) => (
                                 <div
                                     key={file.public_id || index}
-                                    className="flex items-center gap-3 p-3 hover:bg-[#3a3a3a] rounded-lg cursor-pointer transition-colors"
+                                    className="flex items-center gap-3 p-3 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg cursor-pointer transition-colors"
                                     onClick={(e) => handleFileView(file, e)}
                                 >
                                     {/* Preview/Icon */}
@@ -346,8 +346,8 @@ function ShowProfileAttachmentList({ files, onClose }) {
 
                                     {/* File info */}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-white text-sm truncate font-medium">{file.filename || 'Unnamed file'}</p>
-                                        <p className="text-gray-400 text-xs">{formatFileSize(file.fileSize)}</p>
+                                        <p className="text-secondary dark:text-secondary-dark text-sm truncate font-medium">{file.filename || 'Unnamed file'}</p>
+                                        <p className="text-gray-500 text-xs">{formatFileSize(file.fileSize)}</p>
                                     </div>
 
                                     {/* Action buttons */}
@@ -367,7 +367,7 @@ function ShowProfileAttachmentList({ files, onClose }) {
                                         {(file.fileType === 'image' || file.fileType === 'video' || file.fileType === 'raw') && (
                                             <button
                                                 onClick={(e) => handleFileView(file, e)}
-                                                className="text-green-400 hover:text-green-300 p-1 transition-colors"
+                                                className="text-accent  p-1 transition-colors"
                                                 title="View"
                                             >
                                                 <Eye size={18} />
@@ -376,7 +376,7 @@ function ShowProfileAttachmentList({ files, onClose }) {
 
                                         <button
                                             onClick={(e) => handleDownload(file, e)}
-                                            className="text-gray-400 hover:text-gray-300 p-1 transition-colors"
+                                            className="text-gray-500  p-1 transition-colors"
                                             title="Download"
                                         >
                                             <Download size={18} />
