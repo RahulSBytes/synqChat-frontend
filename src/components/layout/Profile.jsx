@@ -10,7 +10,7 @@ import { getSocket } from '../../context/SocketContext.jsx';
 import { server } from '../../constants/config.js';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import TransferGroupOwnershipWin from '../minicomponents/transferGroupOwnershipWin.jsx';
+import TransferGroupOwnershipWin from '../minicomponents/TransferGroupOwnershipWin.jsx';
 
 function Details({ mobileStyle }) {
 
