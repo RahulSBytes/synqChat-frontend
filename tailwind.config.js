@@ -11,7 +11,7 @@ export default {
         handwriting: ['"Patrick Hand"', 'cursive'],
       },
       colors: {
-        accent: "#1F744E",
+        accent: 'var(--accent-color)',
         error: {
           DEFAULT: " #DC2626",
           light: "#F87171",

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EmojiPicker from 'emoji-picker-react';
-import { ArrowLeft, Check, Clapperboard, Dot, DotIcon, Ellipsis, FileAudio, FileAudio2, FilePlay, FileText, Image, Paperclip, Send, SmilePlus, X } from 'lucide-react'
+import { ArrowLeft, Bubbles, Check, Clapperboard, Dot, DotIcon, Ellipsis, FileAudio, FileAudio2, FilePlay, FileText, Image, Paperclip, Send, SmilePlus, X } from 'lucide-react'
 import { useChatStore } from '../store/chatStore.js';
 import moment from 'moment'
 import { useAuthStore } from '../store/authStore.js';
@@ -19,6 +19,7 @@ import { server } from '../constants/config.js';
 import MessageStatus from './minicomponents/MessageStatus.jsx';
 import { useAutoMarkRead } from '../hooks/useAutoMarkRead.js';
 import { useAutoMarkDelivered } from '../hooks/useAutoMarkDelivered.js';
+import usePreferencesStore from '../store/usePreferencesStore.js';
 
 function Chats() {
   const { onlineUsers } = useOutletContext();
@@ -62,6 +63,8 @@ function Chats() {
     updateContactsList,
     fetchContact
   } = useApiStore();
+  const preferences = usePreferencesStore(state => state.preferences)
+  console.log("preferences", preferences)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
   // ✅ Auto-mark delivered when messages load
   // useAutoMarkDelivered(currentSelectedChatId);
@@ -334,11 +337,12 @@ function Chats() {
 
   const haveYouBlocked = !chatInfo.isBlocked
 
+  const BubbleShape = preferences.messageBubbleStyle === "rounded" ? "rounded-full" : preferences.messageBubbleStyle === "minimal" ? "rounded-t-md rounded-br-md" : "rounded-sm"
 
 
 
   return (
-    <div className="flex-1 min-w-0 h-full flex flex-col relative">
+    <div className="flex-1 min-w-0 h-full flex flex-col relative ">
       {/* HEADER */}
       <div className='sticky bg-surface dark:bg-surface-dark top-0 z-10 flex justify-between items-center p-3 border-b border-placeholder-txt/30'>
         <div className='flex items-center w-full '>
@@ -417,13 +421,7 @@ function Chats() {
                     )}
 
                     <div className={`chat ${sender._id === user._id ? 'chat-end' : 'chat-start'}`}>
-                      {/* {sender._id !== user._id && (
-                        <div className="chat-image avatar">
-                          <div className="w-8 rounded-full">
-                            <img src="/image.png" alt="User avatar" />
-                          </div>
-                        </div>
-                      )} */}
+
                       <div className={`w-full rounded-t-lg flex gap-1 flex-col ${sender._id === user._id ? 'items-end' : 'items-start'}`}>
 
                         {attachments.length > 0 && (
@@ -439,7 +437,7 @@ function Chats() {
                             {textDeletedForEveryone ? (
                               <span className="text-xs italic text-zinc-500 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
                             ) : (
-                              <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3 rounded-full font-sans ${sender._id === user._id
+                              <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3 ${BubbleShape} font-sans ${sender._id === user._id
                                 ? ' bg-message-sent-bg '
                                 : 'bg-me bg-message-received-bg'
                                 }`}
@@ -448,7 +446,7 @@ function Chats() {
                           </div>
                         )}
                         <span className="text-[10px] text-zinc-400 flex mt-1 items-center">
-                          {moment(createdAt).format('hh:mm a')}
+                          {preferences.timeFormat === '12h' ? moment(createdAt).format('hh:mm a') : moment(createdAt).format('HH:mm')}
 
                           {sender._id === user._id && <> <DotIcon size={12} absoluteStrokeWidth /> <MessageStatus status={status} /> </>} </span>
 

@@ -1,32 +1,3 @@
-// // components/GlobalSocketHandler.jsx
-
-// import { useEffect } from "react";
-// import { getSocket } from "../../context/SocketContext";
-// import { useSocketEvents } from "../../hooks/useSocketEvents";
-// import { useChatStore } from "../../store/chatStore";
-// import { useMessageStore } from "../../store/apiStore";
-// import { useAuthStore } from "../../store/authStore";  // ✅ Zustand
-// import axios from "axios";
-// import { server } from "../../constants/config";
-// import {
-//     NEW_MESSAGE,
-//     MESSAGE_DELIVERED,
-//     MESSAGE_READ,
-//     UNREAD_COUNT_UPDATED,
-//     REFETCH_CHATS,
-//     MESSAGE_DELETED,
-//     UPDATE_LAST_MESSAGE,
-//     UPDATE_CHAT,
-// } from "../../constants/events";
-
-
-
-
-
-
-
-// components/GlobalSocketHandler.jsx
-
 import { getSocket } from "../../context/SocketContext";
 import  useSocketEvents  from "../../hooks/useSocketEvents";
 import { useChatStore } from "../../store/chatStore";

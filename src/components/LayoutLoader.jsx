@@ -1,5 +1,3 @@
-
-
 function LayoutLoader() {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#1a1a1a] text-white z-50">

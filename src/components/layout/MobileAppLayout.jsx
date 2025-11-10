@@ -38,16 +38,12 @@ export default function MobileAppLayout() {
       {isSearchPeopleClicked && <FindDialog />}
       {isNotificationClicked && <Notification />}
 
-      {/* <MobileNavbar /> */}
-
-      {/* Show UsersList when no chat is selected (home page) */}
       {!chatId && (
         <div className="">
           <UsersList onlineUsers={onlineUsers}/>
         </div>
       )}
-
-      {/* Show Chat when chat is selected */}
+      
       {chatId && (
         <div className="flex-1 bg-[#212121] overflow-hidden">
           <Outlet context={{ onlineUsers }} />

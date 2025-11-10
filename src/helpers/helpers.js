@@ -11,17 +11,28 @@ function eligibleUserForGroupCreation(contacts, user) {
     );
 }
 
-
 async function apiRequest(promise) {
   try {
     const res = await promise;
     return [res.data, null];
   } catch (err) {
-    const message = err.response?.data?.message || err.message || "Something went wrong";
+    const message =
+      err.response?.data?.message || err.message || "Something went wrong";
     return [null, message];
   }
 }
 
+export const buildInitialValues = (source, mapping) => {
+  const values = {};
 
+  Object.entries(mapping).forEach(([formField, sourcePath]) => {
+    const value = sourcePath
+      .split(".")
+      .reduce((obj, key) => obj?.[key], source);
+    values[formField] = value ?? mapping[formField].default;
+  });
 
-export { eligibleUserForGroupCreation,apiRequest };
+  return values;
+};
+
+export { eligibleUserForGroupCreation, apiRequest };

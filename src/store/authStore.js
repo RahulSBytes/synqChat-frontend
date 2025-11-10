@@ -21,6 +21,8 @@ export const useAuthStore = create((set) => ({
       })
     );
 
+    console.log("zustand ::", data, error)
+
     if (error) {
       set({ error, loader: false });
       return false;
@@ -30,7 +32,8 @@ export const useAuthStore = create((set) => ({
     return true;
   },
 
-  
+    // ✅ ADD THIS NEW METHOD
+  updateUser: (user) => set({ user }),
 
   logout: async () => {
     set({ error: null });
@@ -50,53 +53,4 @@ export const useAuthStore = create((set) => ({
     set({ user: null });
     return true
   },
-
-
-
-
-  // adminLogin: async (secretKey) => {
-  //   try {
-  //     const config = {
-  //       withCredentials: true,
-  //       headers: { "Content-Type": "application/json" },
-  //     };
-
-  //     const { data } = await axios.post(
-  //       `${server}/api/v1/admin/verify`,
-  //       { secretKey },
-  //       config
-  //     );
-
-  //     set({ isAdmin: true });
-  //     toast.success(data.message);
-  //   } catch (error) {
-  //     set({ isAdmin: false });
-  //     toast.error(error.response?.data?.message || "Login failed");
-  //   }
-  // },
-
-  // getAdmin: async () => {
-  //   try {
-  //     const { data } = await axios.get(`${server}/api/v1/admin/`, {
-  //       withCredentials: true,
-  //     });
-  //     set({ isAdmin: !!data.admin });
-  //   } catch (error) {
-  //     set({ isAdmin: false });
-  //   }
-  // },
-
-  // adminLogout: async () => {
-  //   try {
-  //     const { data } = await axios.get(`${server}/api/v1/admin/logout`, {
-  //       withCredentials: true,
-  //     });
-
-  //     set({ isAdmin: false });
-  //     toast.success(data.message);
-  //   } catch (error) {
-  //     set({ isAdmin: true });
-  //     toast.error(error.response?.data?.message || "Logout failed");
-  //   }
-  // },
 }));

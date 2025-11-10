@@ -12,9 +12,8 @@ import { SocketProvider } from "./context/SocketContext.jsx";
 import ResponsiveLayout from "./components/layout/ResponsiveLayout.jsx";
 import GlobalSocketHandler from "./components/minicomponents/GlobalSocketHandler.jsx";
 import SocketHandler from "./components/minicomponents/SocketHandler.jsx";
+import Settings from "./components/settings/Settings.jsx";
 
-// Lazy-loaded pages
-// const Group = lazy(() => import("./components/Group"));
 const Signup = lazy(() => import("./components/Signup.jsx"));
 const Login = lazy(() => import("./components/layout/Login.jsx"));
 const NotFound = lazy(() => import("./components/NotFound"));
@@ -22,17 +21,14 @@ const Dashboard = lazy(() => import("./components/admin/Dashboard"));
 const UserManagement = lazy(() => import("./components/admin/UserManagement"));
 const ChatManagement = lazy(() => import("./components/admin/ChatManagement"));
 const MessagesManagement = lazy(() => import("./components/admin/MessagesManagement"));
-const Settings = lazy(() => import("./components/settings/Settings.jsx"));
 
 
-// Lazy-loaded settings tabs
 const ProfileTab = lazy(() => import("./components/settings/tabs/ProfileTab"));
 const AppearanceTab = lazy(() => import("./components/settings/tabs/AppearanceTab"));
 const PrivacyTab = lazy(() => import("./components/settings/tabs/PrivacyTab"));
 const GeneralTab = lazy(() => import("./components/settings/tabs/GeneralTab"));
 
 
-// Helper component to wrap lazy components with Suspense
 const LazyWrapper = ({ children }) => (
   <Suspense fallback={<div>Loading component...</div>}>
     {children}
@@ -95,7 +91,7 @@ function App() {
   return (
     <SocketProvider>
       <SocketHandler />
-      <GlobalSocketHandler />  {/* ✅ ADD THIS - Always active */}
+      <GlobalSocketHandler />  
       <RouterProvider router={router} />
       <Toaster position="bottom-center" />
     </SocketProvider>

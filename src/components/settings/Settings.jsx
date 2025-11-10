@@ -1,65 +1,64 @@
 // settings/Settings.jsx
-import { useState, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, Suspense } from 'react';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import useMeta from '../../hooks/useMeta.js';
 import usePreferencesStore from '../../store/usePreferencesStore.js';
 import SettingsSidebar from './components/SettingsSidebar';
 import MobileHeader from './components/MobileHeader';
-import PasswordModal from './modals/PasswordModal';
-
-// Lazy load tabs for better performance
-const ProfileTab = lazy(() => import('./tabs/ProfileTab'));
-const AppearanceTab = lazy(() => import('./tabs/AppearanceTab'));
-const PrivacyTab = lazy(() => import('./tabs/PrivacyTab'));
-const GeneralTab = lazy(() => import('./tabs/GeneralTab'));
-
-const TABS = {
-  profile: ProfileTab,
-  appearance: AppearanceTab,
-  privacy: PrivacyTab,
-  general: GeneralTab,
-};
+import PasswordModal from './components/PasswordModal.jsx';
 
 export default function Settings() {
-  useMeta({ title: "setting", description: "this is setting page" });
+  useMeta({ title: "Settings", description: "Manage your account settings" });
 
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('profile');
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { isLoading } = usePreferencesStore();
 
-  const TabComponent = TABS[activeTab];
+  // Extract active tab from current path
+  const activeTab = location.pathname.split('/').filter(Boolean).pop() || 'profile';
 
-  if (isLoading) return <div>Loading.....</div>
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] text-white flex items-center justify-center">
+        <div className="text-lg">Loading settings...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-screen bg-[#1a1a1a] text-white flex flex-col lg:flex-row">
+    <div className="h-screen bg-surface dark:bg-surface-dark text-primary dark:text-primary-dark flex flex-col lg:flex-row overflow-hidden">
       <MobileHeader
         onBack={() => navigate(-1)}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
       />
 
+      {/* Mobile menu overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       <SettingsSidebar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
         onBack={() => navigate(-1)}
       />
 
-      <div className="flex-1 overflow-y-auto border border-red-600">
-        <div className="border border-green-600 max-w-3xl mx-auto p-6 md:p-8">
-          <Suspense fallback={<div>Loading...</div>}>
-            <TabComponent onPasswordModal={() => setShowPasswordModal(true)} />
+      {/* Main content area */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto p-6 md:p-8">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="text-zinc-400">Loading...</div>
+            </div>
+          }>
+            <Outlet context={{ onPasswordModal: () => setShowPasswordModal(true) }} />
           </Suspense>
         </div>
       </div>

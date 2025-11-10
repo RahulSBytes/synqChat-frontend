@@ -7,7 +7,7 @@ import FindDialog from "../FindDialog.jsx";
 import Notification from "../Notification.jsx";
 import { Outlet, useLocation } from "react-router-dom";
 import { useChatStore } from "../../store/chatStore.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSocketEvents from "../../hooks/useSocketEvents.js";
 import { Socket } from "socket.io-client";
 import { getSocket } from "../../context/SocketContext.jsx";
@@ -15,26 +15,36 @@ import { ONLINE_USERS } from "../../constants/events.js";
 import { useAuthStore } from "../../store/authStore.js";
 import MobileAppLayout from "./MobileAppLayout.jsx";
 import MobileNavbar from "./MobileNavbar.jsx";
+import usePreferencesStore from "../../store/usePreferencesStore.js";
 // import { set } from "mongoose";
 
 export default function AppLayout() {
 
   const user = useAuthStore((state) => state.user)
   const { isNewGroupClicked, isSearchPeopleClicked, isNotificationClicked } = useUIStore();
+  const preferences = usePreferencesStore(state => state.preferences)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
   const socket = getSocket()
 
   console.log("currently loggedin user ::", user.username, user._id)
-const location = useLocation()
+  const location = useLocation()
 
-const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === '/';
   const [onlineUsers, setOnlineUsers] = useState([]);
+
+  // App.jsx
+  useEffect(() => {
+    if (preferences?.accentColor) {
+      document.documentElement.style.setProperty('--accent-color', preferences.accentColor);
+    }
+  }, [preferences?.accentColor]);
 
   useSocketEvents(socket, {
     [ONLINE_USERS]: (userIds) => {
       setOnlineUsers(userIds)
     }
   })
+
 
 
   return (<div>
@@ -50,7 +60,7 @@ const isHomePage = location.pathname === '/';
         isNotificationClicked && <Notification />
       }
 
-      
+
 
       <Navbar />
       {/* User List */}

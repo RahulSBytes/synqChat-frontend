@@ -7,6 +7,12 @@
   to { transform: rotate(360deg); }
 }
 
+@layer base {
+  :root {
+    --accent-color: #1F744E; 
+  }
+}
+
 .animate-spin-slow {
   animation: spin-slow 2.5s linear infinite;
 }

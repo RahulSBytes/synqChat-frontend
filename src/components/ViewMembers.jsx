@@ -12,7 +12,6 @@ import moment from 'moment'
 function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
 
     const [addMember, setAddMember] = useState('')
-    // console.log("filteredMembers ::", filteredMembers)
     const removeMemberFromGroup = useApiStore(state => state.removeMemberFromGroup)
     const addMemberInGroup = useApiStore(state => state.addMemberInGroup)
 
@@ -43,14 +42,14 @@ function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
                                     <div key={_id} className="  items-center flex justify-between px-4 py-2 bg-surface dark:bg-surface-dark hover:bg-zinc-200 dark:hover:bg-[#292929]">
                                         <div className="flex gap-2 items-center min-w-0 flex-1">
                                             <img src={avatar.url || '/image.png'}
-                                                className="h-8 w-8 rounded-full border-[2px] border-[#248F60] flex-shrink-0" />
+                                                className="h-8 w-8 rounded-full border-[2px] border-accent flex-shrink-0" />
                                             <div>
 
                                                 <span className="line-clamp-1 font-semibold text-secondary dark:text-secondary-dark  text-[14px]  truncate">{fullName}</span>
                                                 <span className="line-clamp-1 font-semibold text-[10px] text-muted dark:text-muted-dark">{username}</span>
                                             </div>
                                         </div>
-                                        <span className='cursor-pointer'>{selectedChatInfo.creator._id !== _id ? <Trash2 size={21} onClick={() => removeMemberHandler(_id)} /> : <span className='text-[#248F60] hover:text-[#6ad2a5]'>Creator</span>}</span>
+                                        <span className='cursor-pointer'>{selectedChatInfo.creator._id !== _id ? <Trash2 size={21} onClick={() => removeMemberHandler(_id)} /> : <span className='text-accent'>Creator</span>}</span>
                                     </div>
                                 )
                             }
@@ -62,7 +61,7 @@ function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
                                     <div key={userId._id} className=" items-center flex justify-between px-4 py-2 hover:bg-zinc-200 dark:hover:bg-[#292929]">
                                         <div className="flex gap-2 items-center min-w-0 flex-1">
                                             <img src={userId?.avatar?.url || '/image.png'}
-                                                className="h-8 w-8 rounded-full border-[2px] border-[#248F60] flex-shrink-0" />
+                                                className="h-8 w-8 rounded-full border-[2px] border-accent flex-shrink-0" />
                                             <div>
 
                                                 <span className="line-clamp-1 font-semibold text-secondary dark:text-secondary-dark  text-[14px]  truncate">{userId.fullName}</span>
@@ -86,7 +85,7 @@ function ViewMembers({ selectedChatInfo, setIsViewMembersClicked }) {
                         placeholder="Enter username to add"
                         className="w-full rounded text-secondary dark:text-secondary-dark bg-searchbar dark:bg-searchbar-dark px-3 py-1 mt-2 outline-none"
                     />
-                    <button onClick={handleSubmit} type="submit" className="btn btn-block mt-4 h-8 px-4 rounded-md text-sm bg-[#248F60] text-white font-medium hover:bg-[#1f744e] transition">Add Member</button>
+                    <button onClick={handleSubmit} type="submit" className="btn btn-block mt-4 h-8 px-4 rounded-md text-sm bg-accent text-white font-medium hover:bg-[#1f744e] transition">Add Member</button>
                 </form>
 
             </div>

@@ -166,7 +166,6 @@ function Details({ mobileStyle }) {
                 {/* ---------for group chat------------ */}
                 {selectedChatInfo.groupChat ? (
                     <div className=' flex gap-4 flex-col py-4'>
-                        {/* Profile Section - Fixed height */}
                         <div className='w-full flex flex-col items-center flex-shrink-0'>
                             <div className='relative'>
                             <img

@@ -161,12 +161,7 @@ const CreateGroupForm = () => {
               />
             </div>
 
-
-
-
           </div>
-
-
 
           <div className="flex flex-1 flex-col">
             <label className="block text-sm font-medium  mb-2 text-primary dark:text-primary-dark"> Members </label>

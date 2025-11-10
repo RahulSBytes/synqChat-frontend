@@ -13,8 +13,6 @@ function Login() {
   useMeta({ title: "signup", description: "this is the login page" })
   const navigate = useNavigate();
 
-
-  // const [isAlreadyUser, setIsAlreadyUser] = useState(false);
   const signupForm = useForm();
 
   const [passSeen, setPassSeen] = useState(false);

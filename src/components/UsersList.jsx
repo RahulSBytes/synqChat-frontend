@@ -78,10 +78,8 @@ function UsersList({ onlineUsers }) {
   return (
     <aside className="flex flex-col bg-base dark:bg-base-dark h-screen w-full pt-6">
 
-      {/* Header for mobile */}
       <MobileHeader user={user} />
 
-      {/* Search bar */}
       <div className="flex justify-center">
         <div className="w-[70%] flex bg-searchbar dark:bg-searchbar-dark rounded-full pl-4 pr-2 py-[4px] items-center">
           <input

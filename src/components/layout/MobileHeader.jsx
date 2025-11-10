@@ -39,7 +39,7 @@ function MobileHeader({ user }) {
                 <label htmlFor="my-drawer-4" className="drawer-button md:hidden text-secondary dark:text-secondary-dark">
                     <Menu className='hover:text-accent dark:hover:text-accent' />
                 </label>
-                <div onClick={setIsNotificationClicked} className="  indicator relative hover:text-accent  dark:hover:text-accent  cursor-pointer">
+                <div onClick={setIsNotificationClicked} className="md:hidden  indicator relative hover:text-accent  dark:hover:text-accent  cursor-pointer">
                     <Bell size={22} strokeWidth={2.5} className='  text-secondary dark:text-secondary-dark hover:text-accent dark:hover:text-accent ' />
                     {totalUnread > 0 && <span className="badge badge-xs badge-primary bg-[#248F60] indicator-item  absolute top-1 right-1">
                         {totalUnread > 99 ? "99+" : totalUnread}

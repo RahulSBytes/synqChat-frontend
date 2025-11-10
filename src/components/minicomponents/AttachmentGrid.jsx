@@ -22,7 +22,6 @@ function AttachmentGrid({ attachments, handleContextMenu, _id, userId }) {
 
   if (!attachments || attachments.length === 0) return null;
 
-  // Only hide attachments deleted-for-user, keep deleted-for-everyone for placeholder rendering
   const attachmentsForUser = attachments.filter(
     (att) => !(att.deletedFor || []).includes(userId)
   );
@@ -273,7 +272,7 @@ function AttachmentGrid({ attachments, handleContextMenu, _id, userId }) {
 
   // ---------------------- Main Render ----------------------
   return (
-    <div className="w-full max-w-lg space-y-2">
+    <div className="w-full max-w-lg space-y-2 border border-muted dark:border-muted-dark">
       {/* Media grid */}
       {mediaAttachments.length > 0 && (
         <div className="w-full">
