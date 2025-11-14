@@ -18,11 +18,9 @@ function Navbar() {
   const darkMode = useChatStore((state) => state.darkMode);
   const toggleDarkMode = useChatStore((state) => state.toggleDarkMode);
 
-
-
   const user = useAuthStore(state => state.user)
 
-  // console.log("user ::",user)
+console.log("navbar url user ::", user)
 
   async function logoutHandler() {
     const success = await logout();

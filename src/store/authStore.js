@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { server } from "../constants/config.js";
 import axios from "axios";
-import toast from "react-hot-toast";
 import { apiRequest } from "../helpers/helpers.js";
 
 export const useAuthStore = create((set) => ({
@@ -21,8 +20,6 @@ export const useAuthStore = create((set) => ({
       })
     );
 
-    console.log("zustand ::", data, error)
-
     if (error) {
       set({ error, loader: false });
       return false;
@@ -32,7 +29,6 @@ export const useAuthStore = create((set) => ({
     return true;
   },
 
-    // ✅ ADD THIS NEW METHOD
   updateUser: (user) => set({ user }),
 
   logout: async () => {

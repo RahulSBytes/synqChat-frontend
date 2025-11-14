@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useForm } from "react-hook-form"
-import axios from 'axios'
 import { useAuthStore } from '../../store/authStore.js';
 import useMeta from '../../hooks/useMeta.js';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Eye, EyeOff, File, KeyRound, Mail, User } from 'lucide-react';
-import { server } from "../../constants/config.js"
+import { Eye, EyeOff, KeyRound, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 
@@ -17,11 +15,12 @@ function Login() {
   const [passSeen, setPassSeen] = useState(false);
   const loginForm = useForm();
   const login = useAuthStore(state => state.login)
-  const error = useAuthStore(state => state.error)
-
+  const [loggingIn, setLoggingIn] = useState(false)
 
   const handleLogin = async (param) => {
+    setLoggingIn(true)
     const success = await login(param);
+    setLoggingIn(false)
     if (success) {
       toast.success("Successfully logged in");
       navigate("/", { replace: true });
@@ -74,9 +73,10 @@ function Login() {
           <p className="text-red-500 text-sm">{loginForm.formState.errors.password.message}</p>
         )}
 
-        {/* Submit */}
-        <button type="submit" className="btn btn-active w-full">
-          Login
+        <button className="btn w-full">
+          {loggingIn ? <span className="loading loading-spinner text-zinc-500"></span>
+            : <span>Login</span>
+          }
         </button>
 
         <p className="text-sm">

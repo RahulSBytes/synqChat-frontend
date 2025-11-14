@@ -6,13 +6,16 @@ import axios from 'axios'
 import { server } from '../constants/config.js';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 
 function Login() {
 
+  
   useMeta({ title: "signup", description: "this is the login page" })
+  const [loggingIn, setLoggingIn] = useState(false)
   const navigate = useNavigate();
-
   const signupForm = useForm();
 
   const [passSeen, setPassSeen] = useState(false);
@@ -21,23 +24,34 @@ function Login() {
   const userExists = useAuthStore(state => state.userExists);
 
   const handleSignup = async (param) => {
-    const { bio, username, fullName, password, email, avatar } = param;
-    const formData = new FormData()
-    // Add text fields
-    formData.append('bio', bio)
-    formData.append('email', email)
-    formData.append('fullName', fullName)
-    formData.append('password', password)
-    formData.append('username', username)
-    formData.append('avatar', avatar[0])
+    try {
+      setLoggingIn(true)
+      const { bio, username, fullName, password, email, avatar } = param;
+      const formData = new FormData()
+      // Add text fields
+      formData.append('bio', bio)
+      formData.append('email', email)
+      formData.append('fullName', fullName)
+      formData.append('password', password)
+      formData.append('username', username)
+      formData.append('avatar', avatar[0])
 
-    const { data } = await axios.post(`${server}/api/v1/auth/register`, formData, {
-      withCredentials: true,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const { data } = await axios.post(`${server}/api/v1/auth/register`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    userExists(data)
-    navigate('/')
+      if (data.success) {
+        setLoggingIn(false);
+        toast.success("Successfully signed in")
+      }
+
+      userExists(data.savedUserData)
+      navigate('/')
+    } catch (error) {
+      setLoggingIn(false)
+      toast.error("error signing up")
+    }
   }
 
   return (
@@ -165,7 +179,12 @@ function Login() {
         {signupForm.formState.errors.password && <p className="text-red-500 text-sm">{signupForm.formState.errors.password.message}</p>}
 
         {/* Submit */}
-        <button type="submit" className="btn btn-active w-full">signup</button>
+
+        <button className="btn w-full">
+          {loggingIn ? <span className="loading loading-spinner text-zinc-500"></span>
+            : <span>Sign up</span>
+          }
+        </button>
 
         <p className="text-sm">
           Already have an account?{" "}

@@ -337,7 +337,7 @@ function Chats() {
 
   const haveYouBlocked = !chatInfo.isBlocked
 
-  const BubbleShape = preferences.messageBubbleStyle === "rounded" ? "rounded-full" : preferences.messageBubbleStyle === "minimal" ? "rounded-t-md rounded-br-md" : "rounded-sm"
+  // const BubbleShape = preferences?.messageBubbleStyle === "rounded" ? "rounded-full" : preferences?.messageBubbleStyle === "minimal" ? "rounded-t-md rounded-br-md" : "rounded-sm"
 
 
 
@@ -437,7 +437,7 @@ function Chats() {
                             {textDeletedForEveryone ? (
                               <span className="text-xs italic text-zinc-500 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
                             ) : (
-                              <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3 ${BubbleShape} font-sans ${sender._id === user._id
+                              <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3  font-sans ${sender._id === user._id
                                 ? ' bg-message-sent-bg '
                                 : 'bg-me bg-message-received-bg'
                                 }`}
@@ -446,7 +446,7 @@ function Chats() {
                           </div>
                         )}
                         <span className="text-[10px] text-zinc-400 flex mt-1 items-center">
-                          {preferences.timeFormat === '12h' ? moment(createdAt).format('hh:mm a') : moment(createdAt).format('HH:mm')}
+                          { moment(createdAt).format('hh:mm a') }
 
                           {sender._id === user._id && <> <DotIcon size={12} absoluteStrokeWidth /> <MessageStatus status={status} /> </>} </span>
 
