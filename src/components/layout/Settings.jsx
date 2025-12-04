@@ -24,7 +24,6 @@ export default function Settings() {
     updateGeneralSettings,
   } = usePreferencesStore();
 
-  // ✅ Single useForm for ALL settings
   const { register, watch, setValue, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       // Profile
@@ -55,7 +54,6 @@ export default function Settings() {
     }
   });
 
-  // ✅ Password form (separate since it's in a modal)
   const passwordForm = useForm({
     defaultValues: {
       oldPassword: '',
@@ -64,12 +62,10 @@ export default function Settings() {
     }
   });
 
-  // ✅ Fetch preferences on mount
   useEffect(() => {
     fetchPreferences();
   }, [fetchPreferences]);
 
-  // ✅ Update form when preferences load
   useEffect(() => {
     if (preferences) {
       reset({
@@ -102,7 +98,7 @@ export default function Settings() {
     }
   }, [preferences, reset]);
 
-  // ✅ Submit handlers for each section
+
   const onProfileSubmit = handleSubmit((data) => {
     const profileData = {
       fullName: data.fullName,

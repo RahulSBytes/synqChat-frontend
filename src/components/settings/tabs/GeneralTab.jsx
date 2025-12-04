@@ -1,13 +1,17 @@
 // settings/tabs/GeneralTab.jsx
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Bell, Volume2, Keyboard } from 'lucide-react';
+import { Bell, Volume2 } from 'lucide-react';
 import { useChangeTracking } from '../../../hooks/useChangeTracking';
 import usePreferencesStore from '../../../store/usePreferencesStore.js';
 import SaveButton from '../components/shared/SaveButton.jsx';
 import ToggleSwitch from '../components/shared/ToggleSwitch.jsx';
 
 export default function GeneralTab() {
+
+  if(true) return <div className='text-secondary dark:text-secondary-dark text-center'>This section is currently being improved. Updates will be available soon.</div>
+
+
   const { preferences, fetchPreferences, updateGeneralSettings } = usePreferencesStore();
   
   const formMethods = useForm({
@@ -70,17 +74,6 @@ export default function GeneralTab() {
           onChange={(checked) => setValue('tickSound', checked)}
         />
 
-        <ToggleSwitch
-          label="Enter to Send"
-          description={
-            watch('enterToSend')
-              ? 'Press Enter to send, Shift+Enter for new line'
-              : 'Press Ctrl+Enter to send, Enter for new line'
-          }
-          icon={Keyboard}
-          checked={watch('enterToSend')}
-          onChange={(checked) => setValue('enterToSend', checked)}
-        />
       </div>
 
       <SaveButton 

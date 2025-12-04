@@ -29,6 +29,7 @@ export const useApiStore = create(
     },
 
     addMessageFromSocket: (newMessage) => {
+      console.log("newMessage ::", newMessage);
       const { messagesRelatedToChat } = get();
       if (messagesRelatedToChat.some((m) => m._id === newMessage._id)) return;
       set({ messagesRelatedToChat: [...messagesRelatedToChat, newMessage] });
@@ -38,8 +39,8 @@ export const useApiStore = create(
 
     // ######## count related methods
 
-    unreadCounts: {}, 
-    totalUnread: 0, 
+    unreadCounts: {},
+    totalUnread: 0,
 
     setUnreadCounts: (unreadCounts, totalUnread) => {
       set({ unreadCounts, totalUnread });
@@ -56,7 +57,6 @@ export const useApiStore = create(
         };
       });
     },
-
 
     incrementUnreadCount: (chatId) => {
       set((state) => {
@@ -90,6 +90,8 @@ export const useApiStore = create(
     // ######## count related methods
 
     fetchContact: async () => {
+console.log("fetching contacts")
+
       const [data, error] = await apiRequest(
         axios.get(`${server}/api/v1/chats`, { withCredentials: true })
       );
@@ -225,6 +227,9 @@ export const useApiStore = create(
           { withCredentials: true }
         )
       );
+
+console.log("handleFriendRequest:: ", data, error)
+
       return error ? false : true;
     },
 
@@ -240,6 +245,5 @@ export const useApiStore = create(
       console.log("leaveGroup::", data, error);
       return error ? false : true;
     },
-
   }))
 );

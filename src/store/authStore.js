@@ -22,11 +22,11 @@ export const useAuthStore = create((set) => ({
 
     if (error) {
       set({ error, loader: false });
-      return false;
+      return { status: false, message: error.message };
     }
 
     set({ user: data.savedUserData, error: null, loader: false });
-    return true;
+    return { status: true, message: "Successfully logged in" };
   },
 
   updateUser: (user) => set({ user }),
@@ -34,19 +34,15 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     set({ error: null });
     const [data, error] = await apiRequest(
-      axios.post(
-        `${server}/api/v1/auth/logout`,
-        {},
-        { withCredentials: true }
-      )
+      axios.post(`${server}/api/v1/auth/logout`, {}, { withCredentials: true })
     );
 
-    if (error) { 
+    if (error) {
       set({ error });
       return false;
     }
 
     set({ user: null });
-    return true
+    return true;
   },
 }));

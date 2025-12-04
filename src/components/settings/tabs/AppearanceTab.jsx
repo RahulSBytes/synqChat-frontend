@@ -8,6 +8,11 @@ import SaveButton from '../components/shared/SaveButton.jsx';
 import SettingItem from '../components/shared/SettingItem.jsx';
 
 export default function AppearanceTab() {
+
+
+  if(true) return <div className='text-secondary dark:text-secondary-dark text-center'>This section is currently being improved. Updates will be available soon.</div>
+
+
   const { preferences, fetchPreferences, updateAppearance } = usePreferencesStore();
   
   const formMethods = useForm({
@@ -51,7 +56,9 @@ export default function AppearanceTab() {
     { value: '24h', label: '24h' }
   ];
 
+    
   return (
+
     <div className="space-y-6">
       <h2 className="text-xl md:text-2xl font-semibold">Appearance</h2>
 

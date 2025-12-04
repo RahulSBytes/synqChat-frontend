@@ -2,8 +2,6 @@ import { Bell, LogOut, Moon, Plus, Settings, Sun, UserRoundSearch, Users } from 
 import { useUIStore } from '../../store/store.js'
 import '../../index.css'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { server } from "../../constants/config.js"
 import { useAuthStore } from '../../store/authStore.js';
 import toast from 'react-hot-toast';
 import { useApiStore } from '../../store/apiStore.js';
@@ -19,8 +17,6 @@ function Navbar() {
   const toggleDarkMode = useChatStore((state) => state.toggleDarkMode);
 
   const user = useAuthStore(state => state.user)
-
-console.log("navbar url user ::", user)
 
   async function logoutHandler() {
     const success = await logout();

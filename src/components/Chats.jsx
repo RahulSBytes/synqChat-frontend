@@ -64,8 +64,8 @@ function Chats() {
     fetchContact
   } = useApiStore();
   const preferences = usePreferencesStore(state => state.preferences)
-  console.log("preferences", preferences)
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId);
+  const darkMode = useChatStore((state) => state.darkMode);
   // ✅ Auto-mark delivered when messages load
   // useAutoMarkDelivered(currentSelectedChatId);
 
@@ -145,6 +145,8 @@ function Chats() {
   useSocketEvents(socket, {
     [NEW_MESSAGE]: async (data) => {
 
+      console.log("new message data :: ", data)
+
       const isMyMessage = data.sender._id === user._id;
       const isCurrentChat = data.chat === currentSelectedChatId;
 
@@ -163,7 +165,6 @@ function Chats() {
       }
 
       try {
-        // ✅ 2. Handle UI updates
         if (isCurrentChat) {
           // Add message to current chat
           addMessageFromSocket(data);
@@ -180,16 +181,9 @@ function Chats() {
           }
         }
       } catch (error) {
-        console.log("errorroo socket handler ", error)
+        console.log("error socket handler ", error)
       }
 
-      // else {
-      // Message for different chat
-      // if (!isMyMessage) {
-      //   incrementUnreadCount(data.chat);
-      //   showNotification(data.sender.fullName, data.text);
-      // }
-      // }
     },
 
     [MESSAGE_DELIVERED]: ({ chatId, messageIds, deliveredBy }) => {
@@ -204,6 +198,8 @@ function Chats() {
       updateContactUnreadCount(chatId, unreadCount);
     },
     [REFETCH_CHATS]: () => {
+      console.log("refreshing chat")
+
       fetchContact();
     },
     [MESSAGE_DELETED]: (data) => {
@@ -385,112 +381,108 @@ function Chats() {
         </div>
 
 
-        {/* sidebarrr */}
-
-
       </div>
 
 
 
       {/* MESSAGES SECTION */}
-      <div ref={chatContainerRef} className='flex-1 overflow-y-auto bg-surface dark:bg-surface-dark scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent px-6 py-4 flex flex-col'>
+      <div ref={chatContainerRef} className='overflow-y-auto bg-surface dark:bg-surface-dark scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent px-6 py-4 h-full flex flex-col'>
 
         {messagesRelatedToChat.length > 0 ? (
-          <>
-            <div className="flex flex-col gap-2">
-              {messagesRelatedToChat.map((msg, index) => {
-                const { _id, sender, attachments, text, textDeletedFor = [], textDeletedForEveryone = false, createdAt, status = '' } = msg;
+          <div className="flex flex-col gap-2">
+            {messagesRelatedToChat.map((msg, index) => {
+              const { _id, sender, attachments, text, textDeletedFor = [], textDeletedForEveryone = false, createdAt, status = '' } = msg;
 
-                if (textDeletedFor.includes(user._id) && attachments.every((el) => el.deletedFor.includes(user._id))) return null;
+              if (textDeletedFor.includes(user._id) && attachments.every((el) => el.deletedFor.includes(user._id))) return null;
 
-                const msgDate = moment(createdAt).format('DD-MM-YYYY');
-                const prevMsgDate = index > 0 ? moment(messagesRelatedToChat[index - 1].createdAt).format('DD-MM-YYYY') : null;
-                const isDateTransition = msgDate !== prevMsgDate;
+              const msgDate = moment(createdAt).format('DD-MM-YYYY');
+              const prevMsgDate = index > 0 ? moment(messagesRelatedToChat[index - 1].createdAt).format('DD-MM-YYYY') : null;
+              const isDateTransition = msgDate !== prevMsgDate;
 
-                return (
-                  <div key={_id}>
-                    {isDateTransition && (
-                      <div className="text-center text-xs my-2 text-zinc-400">
-                        {moment(createdAt).calendar(null, {
-                          sameDay: '[Today]',
-                          lastDay: '[Yesterday]',
-                          lastWeek: 'dddd, MMM D',
-                          sameElse: 'MMMM D, YYYY'
-                        })}
-                      </div>
-                    )}
+              return (
+                <div key={_id} >
+                  {isDateTransition && (
+                    <div className="text-center text-xs my-2 text-zinc-400">
+                      {moment(createdAt).calendar(null, {
+                        sameDay: '[Today]',
+                        lastDay: '[Yesterday]',
+                        lastWeek: 'dddd, MMM D',
+                        sameElse: 'MMMM D, YYYY'
+                      })}
+                    </div>
+                  )}
 
-                    <div className={`chat ${sender._id === user._id ? 'chat-end' : 'chat-start'}`}>
+                  <div className={`chat ${sender._id === user._id ? 'chat-end' : 'chat-start'}`}>
 
-                      <div className={`w-full rounded-t-lg flex gap-1 flex-col ${sender._id === user._id ? 'items-end' : 'items-start'}`}>
+                    <div className={`w-full rounded-t-lg flex gap-1 flex-col min-w-0 ${sender._id === user._id ? 'items-end' : 'items-start'}`}>
 
-                        {attachments.length > 0 && (
-                          <label htmlFor="attachment" className="p-1 flex justify-end w-[40%]">
-                            <AttachmentGrid attachments={attachments} handleContextMenu={handleContextMenu} userId={user._id} _id={_id} />
-                            <input type="text" id="attachment" className="hidden" />
-                          </label>
-                        )}
-                        {(text.length > 0 || textDeletedForEveryone) && (
-                          <div
+                      {attachments.length > 0 && (
+                        <label htmlFor="attachment" className="flex justify-end max-w-[60%]">
+                          <AttachmentGrid attachments={attachments} handleContextMenu={handleContextMenu} userId={user._id} _id={_id} />
+                          <input type="text" id="attachment" className="hidden" />
+                        </label>
+                      )}
+                      {(text.length > 0 || textDeletedForEveryone) && (
+                        <div
 
-                          >
-                            {textDeletedForEveryone ? (
-                              <span className="text-xs italic text-zinc-500 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
-                            ) : (
-                              <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3  font-sans ${sender._id === user._id
-                                ? ' bg-message-sent-bg '
-                                : 'bg-me bg-message-received-bg'
-                                }`}
-                                onContextMenu={(e) => handleContextMenu(_id, { type: 'text', text }, e)} >{text}</span>
-                            )}
-                          </div>
-                        )}
-                        <span className="text-[10px] text-zinc-400 flex mt-1 items-center">
-                          { moment(createdAt).format('hh:mm a') }
+                        >
+                          {textDeletedForEveryone ? (
+                            <span className="text-xs italic text-zinc-500 bg-[#2d2d2d] py-1 px-2 rounded">this message was deleted</span>
+                          ) : (
+                            <span className={`whitespace-pre-wrap text-message-text  break-words max-w-[70%] py-[6px] px-3  font-sans ${sender._id === user._id
+                              ? ' bg-message-sent-bg '
+                              : 'bg-me bg-message-received-bg'
+                              }`}
+                              onContextMenu={(e) => handleContextMenu(_id, { type: 'text', text }, e)} >{text}</span>
+                          )}
+                        </div>
+                      )}
+                      <span className="text-[10px] text-zinc-400 flex items-center">
+                        {moment(createdAt).format('hh:mm a')}
 
-                          {sender._id === user._id && <> <DotIcon size={12} absoluteStrokeWidth /> <MessageStatus status={status} /> </>} </span>
+                        {sender._id === user._id && <> <DotIcon size={12} absoluteStrokeWidth /> <MessageStatus status={status} /> </>} </span>
 
-                        {contextMenu.visible && contextMenu.messageId === _id && (
-                          <div id="custom-context-menu" className="fixed z-50 bg-[#2a2a2a] text-white rounded-md shadow-lg"
-                            style={{ top: contextMenu.y, left: contextMenu.x }}>
-                            <div className="flex overflow-x-auto gap-1 p-2 border-b border-gray-700 max-w-[250px] scrollbar-thin scrollbar-thumb-[#444]">
-                              {["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🙏"].map(emoji => (
-                                <span key={emoji} className="cursor-pointer text-xl hover:scale-110"
-                                  onClick={() => {
-                                    setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
-                                  }}>
-                                  {emoji}
-                                </span>
-                              ))}
-                            </div>
-                            <div className="flex flex-col text-sm">
-                              <button className="px-4 py-2 hover:bg-[#689969] text-left"
+                      {contextMenu.visible && contextMenu.messageId === _id && (
+                        <div id="custom-context-menu" className="fixed z-50 bg-[#2a2a2a] text-white rounded-md shadow-lg"
+                          style={{ top: contextMenu.y, left: contextMenu.x }}>
+                          <div className="flex overflow-x-auto gap-1 p-2 border-b border-gray-700 max-w-[250px] scrollbar-thin scrollbar-thumb-[#444]">
+                            {["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🙏"].map(emoji => (
+                              <span key={emoji} className="cursor-pointer text-xl hover:scale-110"
                                 onClick={() => {
-                                  handleDeleteMessage(contextMenu.messageId, contextMenu.data, isDeleteForEveryone = false);
                                   setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
                                 }}>
-                                Delete for me
-                              </button>
-                              {haveYouBlocked && sender._id === user._id && (
-                                <button className="px-4 py-2 hover:bg-[#689969] text-left"
-                                  onClick={() => {
-                                    handleDeleteMessage(contextMenu.messageId, contextMenu.data, isDeleteForEveryone = true);
-                                    setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
-                                  }}>
-                                  Delete for everyone
-                                </button>
-                              )}
-                            </div>
+                                {emoji}
+                              </span>
+                            ))}
                           </div>
-                        )}
-                      </div>
+                          <div className="flex flex-col text-sm">
+                            <button className="px-4 py-2 hover:bg-[#689969] text-left"
+                              onClick={() => {
+                                handleDeleteMessage(contextMenu.messageId, contextMenu.data, isDeleteForEveryone = false);
+                                setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
+                              }}>
+                              Delete for me
+                            </button>
+                            {haveYouBlocked && sender._id === user._id && (
+                              <button className="px-4 py-2 hover:bg-[#689969] text-left"
+                                onClick={() => {
+                                  handleDeleteMessage(contextMenu.messageId, contextMenu.data, isDeleteForEveryone = true);
+                                  setContextMenu({ visible: false, messageId: null, x: 0, y: 0, data: null });
+                                }}>
+                                Delete for everyone
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-          </>
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+
         ) : (
           <div className="flex items-center justify-center flex-1">
             <p className="text-gray-500">No messages yet</p>
@@ -509,29 +501,29 @@ function Chats() {
       {haveYouBlocked && <div className='sticky bottom-0 bg-surface dark:bg-surface-dark pt-2 pb-4 px-3 w-full border-t border-placeholder-txt'>
         {isEmojiOpen && (
           <div ref={emojiRef} className="absolute bottom-full left-0 w-full z-20">
-            <EmojiPicker onEmojiClick={onEmojiSelect} height={200} width='100%' theme='dark'
+            <EmojiPicker theme={darkMode ? "dark" : "light"} onEmojiClick={onEmojiSelect} height={200} width='100%' 
               previewConfig={{ showPreview: false }} searchDisabled={true} skinTonesDisabled={true} />
           </div>
         )}
         <form className='flex items-center relative'>
-          <div className='p-2 rounded-full hover:bg-[#313131] cursor-pointer relative'>
+          <div className='p-2 rounded-full hover:bg-zinc-300 hover:dark:bg-zinc-600 cursor-pointer relative'>
             {isAttachmentOpen && (
-              <div ref={attachmentRef} className="absolute flex flex-col items-start bottom-12 left-0 bg-[#272727] p-2 gap-1 rounded-lg shadow-lg z-10 w-max">
+              <div ref={attachmentRef} className="absolute flex flex-col items-start bottom-12 left-0 bg-zinc-300 dark:bg-zinc-600 p-2 gap-1 rounded-lg shadow-lg z-10 w-max">
                 <span onClick={() => handleFileSelect('image/*')}
-                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer'>
+                  className='text-secondary dark:text-secondary-dark bg-zinc-200 dark:bg-zinc-500 hover:bg-zinc-400 justify-start px-3 py-2 flex text-sm  gap-2 items-center w-full rounded cursor-pointer'>
                   <Image size={14} />Images
                 </span>
                 <span onClick={() => handleFileSelect('video/*')}
-                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer'>
+                  className='text-secondary dark:text-secondary-dark bg-zinc-200 dark:bg-zinc-500 hover:bg-zinc-400 justify-start px-3 py-2 flex text-sm  gap-2 items-center w-full rounded cursor-pointer'>
                   <FilePlay size={14} />Videos
                 </span>
                 <span onClick={() => handleFileSelect('audio/*')}
-                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer'>
+                  className='text-secondary dark:text-secondary-dark bg-zinc-200 dark:bg-zinc-500 hover:bg-zinc-400 justify-start px-3 py-2 flex text-sm  gap-2 items-center w-full rounded cursor-pointer'>
                   <FileAudio2 size={14} />Audio
                 </span>
                 <span onClick={() => handleFileSelect('*/*')}
-                  className='justify-start px-3 py-2 flex text-sm bg-[#414141] hover:bg-[#353535] gap-2 items-center w-full rounded cursor-pointer'>
-                  <FileText size={14} />Documents
+                  className='text-secondary dark:text-secondary-dark bg-zinc-200 dark:bg-zinc-500 hover:bg-zinc-400 justify-start px-3 py-2 flex text-sm  gap-2 items-center w-full rounded cursor-pointer'>
+                  <FileText size={14}  />Documents
                 </span>
               </div>
             )}
@@ -540,39 +532,39 @@ function Chats() {
           <span
             ref={emojiButtonRef}
             onClick={() => setIsEmojiOpen((prev) => !prev)}
-            className="p-2 rounded-full hover:bg-[#313131] mr-2 cursor-pointer"
+            className="p-2 rounded-full hover:bg-zinc-300 hover:dark:bg-zinc-600 mr-2 cursor-pointer"
           >
             <SmilePlus size={18} className='text-muted dark:text-muted-dark' />
           </span>
           <div className='flex items-center flex-1 flex-col'>
             {selectedFiles.length > 0 && (
-              <div className='w-full mb-2 p-2 bg-[#343434] rounded-lg'>
+              <div className='w-full mb-2 p-2 bg-zinc-200 dark:bg-zinc-500 rounded-lg'>
                 <div className='flex items-center justify-between mb-2'>
                   {selectedFiles.length < 6 && (
-                    <div><span className='text-sm text-gray-200'>You can add {6 - selectedFiles.length} more</span></div>
+                    <div><span className='text-sm text-secondary dark:text-secondary-dark'>You can add {6 - selectedFiles.length} more</span></div>
                   )}
                   <button type="button" onClick={clearAllFiles}
                     className='text-xs text-red-400 hover:text-red-300 px-1 py-[2px] rounded hover:bg-[#505050]'>
                     Clear all
                   </button>
                 </div>
-                <div className='flex flex-col gap-1 max-h-32 overflow-y-scroll scrollbar-thin scrollbar-thumb-[#444]'>
+                <div className='flex flex-col gap-1 max-h-32 overflow-y-scroll noScrollbar'>
 
                   {selectedFiles.map((file, index) => (
-                    <div key={`${file.name}-${index}`} className='flex items-center justify-between bg-[#484848] px-2 py-1 rounded'>
+                    <div key={`${file.name}-${index}`} className='flex items-center justify-between bg-zinc-300 dark:bg-zinc-500 px-2 py-1 rounded'>
                       <div className='flex items-center flex-1 min-w-0'>
                         <span className='mr-2'>
-                          {file.type.startsWith('image/') ? <Image /> :
-                            file.type.startsWith('video/') ? <Clapperboard /> :
-                              file.type.startsWith('audio/') ? <FileAudio /> : <FileText />}
+                          {file.type.startsWith('image/') ? <Image className='text-accent' /> :
+                            file.type.startsWith('video/') ? <Clapperboard className='text-accent' /> :
+                              file.type.startsWith('audio/') ? <FileAudio className='text-accent' /> : <FileText className='text-accent' />}
                         </span>
                         <div className='flex flex-col flex-1 min-w-0'>
-                          <span className='text-xs text-white truncate'>{file.name}</span>
-                          <span className='text-[10px] text-gray-400'>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                          <span className='text-xs text-secondary dark:text-secondary-dark font-medium truncate'>{file.name}</span>
+                          <span className='text-[10px] text-zinc-600'>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                         </div>
                       </div>
                       <button type="button" onClick={() => removeSelectedFile(index)}
-                        className='ml-2 p-1 hover:bg-[#606060] rounded-full text-red-400'>
+                        className='ml-2 p-1 hover:bg-[#606060] rounded-full text-red-500'>
                         <X size={15} />
                       </button>
                     </div>
@@ -585,7 +577,7 @@ function Chats() {
                 className="w-full resize-none rounded-3xl px-4 outline-none min-h-[35px] max-h-[112px] py-2 overflow-y-auto bg-searchbar dark:bg-searchbar-dark text-primary dark:text-primary-dark"
                 placeholder={selectedFiles.length > 0 ? `Send ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} with message...` : "Type a message..."} rows={1} />
               <button disabled={isSendingMessage || (!msg.trim() && selectedFiles.length === 0)} type="button" onClick={handleSendMsg}
-                className='p-2 rounded-full hover:bg-[#313131] ml-1 cursor-pointer'>
+                className='p-2 rounded-full hover:bg-zinc-300 hover:dark:bg-zinc-600 ml-1 cursor-pointer'>
                 {sending ?
                   <span className="loading loading-spinner text-[#909090]"></span> :
                   <Send size={20} color={(!msg.trim() && selectedFiles.length === 0) ? '#666' : '#248f60'} />}

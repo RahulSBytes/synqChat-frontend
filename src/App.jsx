@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements } from "react-router-dom";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect} from "react";
 import Home from "./components/Home";
 import ProtectRoute from "./components/auth/protectRoute.jsx";
 import Chats from "./components/Chats";
@@ -29,13 +29,6 @@ const PrivacyTab = lazy(() => import("./components/settings/tabs/PrivacyTab"));
 const GeneralTab = lazy(() => import("./components/settings/tabs/GeneralTab"));
 
 
-const LazyWrapper = ({ children }) => (
-  <Suspense fallback={<div>Loading component...</div>}>
-    {children}
-  </Suspense>
-);
-
-
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
@@ -58,8 +51,6 @@ const router = createBrowserRouter(
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
       </Route>
-
-      {/* Settings route */}
 
       {/* Admin routes */}
       <Route path="/admin" element={<AdminLayout />}>

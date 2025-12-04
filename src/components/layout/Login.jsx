@@ -18,14 +18,17 @@ function Login() {
   const [loggingIn, setLoggingIn] = useState(false)
 
   const handleLogin = async (param) => {
+
+    console.log("login param",param)
+
     setLoggingIn(true)
     const success = await login(param);
     setLoggingIn(false)
-    if (success) {
-      toast.success("Successfully logged in");
+    if (success.status) {
+      toast.success(success.message);
       navigate("/", { replace: true });
     } else {
-      toast.error("Failed to login");
+      toast.error(success.message || "Error logging in");
     }
   };
 

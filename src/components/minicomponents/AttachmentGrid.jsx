@@ -272,7 +272,7 @@ function AttachmentGrid({ attachments, handleContextMenu, _id, userId }) {
 
   // ---------------------- Main Render ----------------------
   return (
-    <div className="w-full max-w-lg space-y-2 border border-muted dark:border-muted-dark">
+    <div className="w-full max-w-lg space-y-2 ">
       {/* Media grid */}
       {mediaAttachments.length > 0 && (
         <div className="w-full">

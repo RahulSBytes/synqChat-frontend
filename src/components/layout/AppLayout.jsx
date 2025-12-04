@@ -9,12 +9,9 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useChatStore } from "../../store/chatStore.js";
 import { useEffect, useState } from "react";
 import useSocketEvents from "../../hooks/useSocketEvents.js";
-import { Socket } from "socket.io-client";
 import { getSocket } from "../../context/SocketContext.jsx";
 import { ONLINE_USERS } from "../../constants/events.js";
 import { useAuthStore } from "../../store/authStore.js";
-import MobileAppLayout from "./MobileAppLayout.jsx";
-import MobileNavbar from "./MobileNavbar.jsx";
 import usePreferencesStore from "../../store/usePreferencesStore.js";
 // import { set } from "mongoose";
 
@@ -26,7 +23,6 @@ export default function AppLayout() {
   const currentSelectedChatId = useChatStore((state) => state.currentSelectedChatId)
   const socket = getSocket()
 
-  console.log("currently loggedin user ::", user.username, user._id)
   const location = useLocation()
 
   const isHomePage = location.pathname === '/';

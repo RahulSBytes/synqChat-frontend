@@ -44,7 +44,6 @@ const FindDialog = () => {
 
 
   async function handleInvite(userId) {
-    console.log("handling Invite");
     const success = await handleInviteApi(userId);
     if (!success) return toast.error("Error sending request");
     toast.success("Request sent");
@@ -92,9 +91,9 @@ const FindDialog = () => {
                           alt={`${username} avatar`}
                         />
                         <div className="flex flex-col">
-                          <span className="line-clamp-1 font-semibold">{username}</span>
+                          <span className="line-clamp-1 font-semibold text-secondary dark:text-secondary-dark">{username}</span>
                           {fullName && (
-                            <span className="line-clamp-1 text-xs text-gray-400">
+                            <span className="line-clamp-1 text-xs text-gray-500 dark:text-gray-400">
                               {fullName}
                             </span>
                           )}
