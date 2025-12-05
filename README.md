@@ -60,14 +60,42 @@ A modern, feature-rich real-time chat application built with React and Socket.io
 
 ## 📸 Screenshots
 
-> - [Login/Signup Page]
-> - [Chat Interface - One-to-One]
-> - [Chat Interface - Group Chat]
-> - [File Sharing/Preview]
-> - [Theme Customization Panel]
-> - [User Profile with Online Status]
-> - [Group Management Interface]
-> - [Emoji Picker and Reactions]
+**Sign up Page**
+![Sign up page](./assets/signuppage.png)
+
+**Login Page**
+![Login page](./assets/loginpage.png)
+
+**Home page and Dark mode interface**
+![Home page & Dark Mode](./assets/homepage.png)
+
+**Delivered & Read tick**
+![Double tick & Blue tick](./assets/bluetickdoubletick.png)
+
+**Media in a Chat**
+![Chat media](./assets/chatmedia.png)
+
+**Listing of selected media**
+![Media selection](./assets/selectedmediafiles.png)
+
+**Group chat interface**
+![Group chat interface](./assets/groupchat.png)
+
+**View group members**
+![Dark mode](./assets/darkmode.png)
+
+**Form to create group**
+![Creating Group](./assets/creatingGroup.png)
+
+**Find people already on SyncChat**
+![Finding people](./assets/findingpeople.png)
+
+**Media selection popup**
+![File Sending](./assets/filesending.png)
+
+**Emojis popup**
+![Emoji panel](./assets/emoji.png)
+
 
 ## 🚀 Getting Started
 
@@ -199,7 +227,7 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-Your Name - [Your GitHub Profile](https://github.com/yourusername)
+Rahul Sharma - [RahulSBytes](https://github.com/RahulSBytes)
 
 ## 🙏 Acknowledgments
 
